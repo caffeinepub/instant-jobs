@@ -1,71 +1,246 @@
 {
   "kind": "build_request",
-  "title": "Investigate and restore missing canister functions used by the frontend",
-  "priority": "high",
+  "title": "Replace Internet Identity with manual credential auth and add JobHai-style credits + admin panel for Instant Jobs",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-11",
-      "text": "Identify which backend canister functions are reported as “missing” after the latest deployment by reproducing the issue in the running app and capturing the exact console/runtime errors (e.g., \"actor.<method> is not a function\" or Candid method-not-found).",
+      "id": "REQ-17",
+      "text": "Replace the current Internet Identity-based authentication flow with an in-app, manual-credentials authentication system supporting three roles: Jobseeker, Employer, and Admin, and ensure all role-gated pages are inaccessible until the appropriate role is logged in.",
       "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-3",
+          "msg-5",
+          "msg-7",
+          "msg-8",
+          "msg-9",
+          "msg-10",
+          "msg-11",
+          "msg-12",
+          "msg-13",
+          "msg-16",
+          "msg-20"
+        ],
+        "quotes": [
+          "Signup using: Mobile Number + OTP; Email + Password (optional)",
+          "Only jobseeker & Employer Admin login need manual credintials",
+          "Yes",
+          "Employer & Jobseeker",
+          "Manual username + password",
+          "User Name : admin@ppsjobs.com\nPassword : 9277492395"
+        ]
+      },
+      "acceptanceCriteria": [
+        "App no longer shows any Internet Identity sign-in copy or Internet Identity help content anywhere in the UI.",
+        "Jobseeker can log in/out using manual credentials and can access only jobseeker pages (e.g., apply flow, applied jobs dashboard).",
+        "Employer can log in/out using manual credentials and can access only employer pages (e.g., employer dashboard, candidate directory).",
+        "Admin can log in/out using manual credentials and can access only admin pages (admin panel).",
+        "Attempting to visit role-protected routes while logged out redirects to a login screen (or shows a clear access denied + login CTA).",
+        "Role switching requires logout, and session state is cleared on logout (including React Query caches where applicable)."
+      ]
+    },
+    {
+      "id": "REQ-18",
+      "text": "Implement secure credential handling on the backend for manual login: store passwords as salted hashes (never plaintext), issue server-generated session tokens on successful login, validate tokens on all protected backend methods, and provide logout/token invalidation.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-11"
+        ],
+        "quotes": [
+          "User Name : admin@ppsjobs.com\nPassword : 9277492395"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Backend stores no plaintext passwords for any role.",
+        "Backend exposes auth methods for: register jobseeker, register employer, login (all roles), logout, and a session-introspection method (e.g., getCurrentSession) to support the frontend.",
+        "All sensitive backend operations (job creation, apply, employer candidate browsing/unlock, admin operations) require a valid session token and enforce role checks.",
+        "Admin credentials are not hardcoded in source; instead, the system supports safe initialization and rotation via admin-only operations once logged in."
+      ]
+    },
+    {
+      "id": "REQ-19",
+      "text": "Add/extend backend data models to match a mobile-first Indian job portal: jobseeker profile fields (Full Name, Mobile Number, Email, Current/Last Company Name, Job Role/Process, Total Experience, Last Drawn Salary in ₹, Preferred Job Location, Active/Inactive), employer fields (Company Name, Contact Person Name, Mobile, Email, Business Location), and support editing profiles anytime.",
+      "target": "backend",
       "source": {
         "messageIds": [
           "msg-3"
         ],
         "quotes": [
-          "Some functions are missing, Fix it"
+          "Jobseeker must complete profile with:\n\nFull Name\n\nMobile Number\n\nEmail ID\n\nCurrent / Last Company Name\n\nJob Role / Process\n\nTotal Experience\n\nLast Drawn Salary (₹)\n\nPreferred Job Location\n\nProfile status: Active / Inactive",
+          "Employer Registration\n\nCompany Name\n\nContact Person Name\n\nMobile Number + OTP\n\nEmail ID\n\nBusiness Location",
+          "Salary displayed in ₹ only"
         ]
       },
       "acceptanceCriteria": [
-        "A clear list of missing/broken functions is produced, including the exact method names and where they are called in the frontend.",
-        "The reproduction steps are documented (which page/role/action triggers the missing function error)."
+        "Backend provides create/update/get APIs for jobseeker and employer profiles keyed to the authenticated session user (not to Internet Identity principal).",
+        "Jobseeker profile enforces required fields and stores profile status Active/Inactive.",
+        "Employer profile stores registration fields required by the spec.",
+        "All salary values are treated as INR and returned in a way the frontend can consistently render as ₹."
       ]
     },
     {
-      "id": "REQ-12",
-      "text": "Restore full parity between the frontend’s expected actor API and the backend canister’s exported Candid interface by ensuring all functions used in frontend/src/hooks/useQueries.ts exist and are callable on the deployed canister (including chooseRole, getCallerUserProfile, saveCallerUserProfile, getJobs, getJob, getJobsByEmployer, createJob, deleteJob, applyForJob, getApplicationsForCandidate, getApplicationsForJob, updateApplicationStatus).",
-      "target": "both",
+      "id": "REQ-20",
+      "text": "Implement JobHai-style employer credits and candidate-profile unlock system in the backend: admin-defined credit cost per unlock, employer credit balance, one-time unlock per candidate (no repeat deduction), permanent access after unlock, prevent unlock if insufficient credits, transaction-safe deduction, and unlock logs for admin audit.",
+      "target": "backend",
       "source": {
         "messageIds": [
           "msg-3"
         ],
         "quotes": [
-          "Some functions are missing, Fix it"
+          "Employer must use credits to unlock jobseeker profile\n\nUnlock rules:\n\nFixed credits per profile\n\nOne-time unlock (no repeat deduction)\n\nUnlocked profiles permanently visible\n\nEmployer cannot buy credits directly\n\nCredits managed only by admin",
+          "Credits deducted only after successful unlock\n\nUnlock logs stored for admin audit",
+          "Prevent duplicate profile unlocks"
         ]
       },
       "acceptanceCriteria": [
-        "In the deployed app, no page action triggers \"is not a function\" / \"method not found\" errors for any actor call in frontend/src/hooks/useQueries.ts.",
-        "Type checking/build succeeds with the generated backend bindings used by the frontend (no missing method typings).",
-        "Candidate flow works end-to-end: browse jobs → view job → apply → see application on Candidate dashboard.",
-        "Employer flow works end-to-end: create job → see it in Employer dashboard → open applicants page → update an application status."
+        "Backend exposes: getEmployerCredits, setCreditCostPerUnlock (admin-only), adminAddCredits/adminDeductCredits (admin-only), unlockCandidateProfile (employer-only), and listUnlockLogs (admin-only).",
+        "unlockCandidateProfile fails with a clear error if the employer has insufficient credits.",
+        "unlockCandidateProfile is idempotent per (employer, candidate): subsequent unlock calls do not deduct credits again and still return success/‘already unlocked’.",
+        "Credit deduction and unlock record creation happen atomically (no partial updates).",
+        "Unlock logs include: employer id, candidate id, timestamp, cost charged."
       ]
     },
     {
-      "id": "REQ-13",
-      "text": "Add user-facing error handling for actor call failures related to missing/unsupported methods so the UI shows a clear English message (and does not silently fail) when a backend method is unavailable, including on Job detail apply, Employer job creation, and application status update actions.",
+      "id": "REQ-21",
+      "text": "Update the employer candidate directory backend API to support limited pre-unlock views and full post-unlock views, including filter parameters (location, salary, experience, process/role) and ensuring locked fields (mobile, email, company name) are hidden until unlocked.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Employer can browse jobseekers with limited profile view:\n\nExperience\n\nProcess / Role\n\nLocation\n\nMobile number, email, company name hidden",
+          "Fast filters:\n\nLocation\n\nSalary\n\nExperience\n\nProcess"
+        ]
+      },
+      "acceptanceCriteria": [
+        "Candidate directory query returns only limited fields for candidates not unlocked by the requesting employer.",
+        "After unlock, the same candidate appears with full details for that employer.",
+        "Candidate directory supports server-side filtering by the specified fields.",
+        "Jobseeker Active/Inactive status is respected (inactive candidates are excluded from employer browsing unless explicitly required for admin views)."
+      ]
+    },
+    {
+      "id": "REQ-22",
+      "text": "Create an Admin Panel UI with full control over the platform: manage employers and jobseekers, manually add/deduct employer credits, set credit cost per unlock, view unlock activity logs, optionally approve/reject job postings, disable any account instantly, and show a metrics dashboard (total employers, total jobseekers, credits used, active jobs).",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-3",
+          "msg-11"
+        ],
+        "quotes": [
+          "🛠️ ADMIN PANEL (FULL CONTROL)\n\nAdmin can:\n\nAdd / edit / delete:\n\nEmployers\n\nJobseekers\n\nManually add or deduct employer credits\n\nApprove or reject job postings\n\nView:\n\nEmployer unlock activity\n\nJobseeker profile views\n\nDisable any account instantly\n\nDashboard with:\n\nTotal employers\n\nTotal jobseekers\n\nCredits used\n\nActive jobs",
+          "User Name : admin@ppsjobs.com\nPassword : 9277492395"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A dedicated admin route exists (e.g., /admin) and is accessible only when logged in as Admin.",
+        "Admin can search/list employers and jobseekers and disable/enable accounts.",
+        "Admin can set credit cost per unlock and adjust employer credit balances.",
+        "Admin can view unlock logs in the UI.",
+        "If job approval is enabled, employers can create jobs but jobs are not visible publicly until admin approval; admin can approve/reject from the panel.",
+        "Admin dashboard displays the specified metrics and updates after actions."
+      ]
+    },
+    {
+      "id": "REQ-23",
+      "text": "Update Employer-facing UI to support credits + unlocking: show available credit balance, show locked candidate cards with a clear locked state, prompt for confirmation before unlock, and after unlock reveal full candidate details and mark as unlocked permanently.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-3"
         ],
         "quotes": [
-          "Some functions are missing, Fix it"
+          "Large CTA buttons (Apply / Unlock)\n\nLocked profile icons",
+          "Employer:\nSees available credits\nCannot see credit history",
+          "Credits deducted only after successful unlock"
         ]
       },
       "acceptanceCriteria": [
-        "When an actor call fails, the user sees an English error message explaining the action failed and prompting them to retry later.",
-        "The UI remains usable after the error (no broken state requiring a full reload to continue navigating)."
+        "Employer Candidates page shows locked/unlocked states per candidate.",
+        "Locked candidates hide mobile/email/company name until unlocked.",
+        "Unlock action requires confirmation and shows clear success/error states (including insufficient credits).",
+        "Employer UI displays current available credits and updates immediately after a successful unlock.",
+        "Unlocked candidates remain unlocked across sessions."
+      ]
+    },
+    {
+      "id": "REQ-24",
+      "text": "Update Job posting and browsing to match Indian job portal expectations: salary displayed in ₹ only, mobile-first card-based listings, and fast filters (location, salary, experience, process) across job browse UI.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Salary displayed in ₹ only",
+          "Clean, minimal, mobile-first UI\n\nCard-based job listings\n\nLarge CTA buttons (Apply / Unlock)",
+          "Fast filters:\n\nLocation\n\nSalary\n\nExperience\n\nProcess"
+        ]
+      },
+      "acceptanceCriteria": [
+        "No UI shows $ currency; all salary displays use ₹.",
+        "Jobs browse page includes fast filters for the specified fields and remains usable on small screens.",
+        "Job cards and job detail pages use a mobile-first, card-based layout with clear CTAs."
+      ]
+    },
+    {
+      "id": "REQ-25",
+      "text": "Apply a fully custom, unique, colorful, mobile-first UI/UX theme across the app (while keeping ‘Instant Jobs’ branding), including distinct styling for employer vs jobseeker vs admin sections, without using Internet Identity-related visuals/copy.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-6",
+          "msg-8"
+        ],
+        "quotes": [
+          "I want unique colourfull UI/UX theme",
+          "A fully custom new theme."
+        ]
+      },
+      "acceptanceCriteria": [
+        "A cohesive, colorful theme is applied consistently across landing, browse, job detail, jobseeker dashboard, employer dashboard/candidates, and admin panel.",
+        "Employer and jobseeker experiences are visually distinct enough to avoid confusion (e.g., navigation, headings, section styling).",
+        "All user-facing text is in English and does not reference Internet Identity."
+      ]
+    },
+    {
+      "id": "REQ-26",
+      "text": "Add any required data migration to preserve existing canister state when changing user/auth/profile schemas (only if the current deployed state would otherwise break), following the project’s conditional migration policy.",
+      "target": "backend",
+      "source": {
+        "messageIds": [
+          "msg-3",
+          "msg-7",
+          "msg-8",
+          "msg-11"
+        ],
+        "quotes": [
+          "Admin (Super Admin)",
+          "Remove Internet Identity completely",
+          "Manual username + password",
+          "User Name : admin@ppsjobs.com\nPassword : 9277492395"
+        ]
+      },
+      "acceptanceCriteria": [
+        "If existing stable state is present, upgrade does not trap and existing jobs/applications (if any) remain accessible after upgrade.",
+        "Migration code exists only if required; otherwise no migration changes are introduced."
       ]
     }
   ],
   "constraints": [
-    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo if an existing stable state upgrade requires it.",
-    "Do not edit files under frontend/src/components/ui or any other frontend immutablePaths from SYSTEM_CONTEXT.",
-    "Use English for any user-facing text."
+    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts or frontend/src/hooks/useActor.ts (immutable paths); implement manual-auth by adding new hooks/components and updating callers to use them.",
+    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo changes if state upgrade requires it.",
+    "No third-party OTP/SMS integration; do not implement real mobile OTP delivery.",
+    "Do not hardcode or store admin credentials in plaintext anywhere (frontend or backend)."
   ],
   "nonGoals": [
-    "Adding new product features beyond restoring missing/broken functions.",
-    "Implementing Google OAuth or any third-party authentication beyond Internet Identity.",
-    "Introducing external databases or additional backend services."
+    "Google OAuth authentication.",
+    "WebSockets/real-time chat or push notifications.",
+    "External databases (PostgreSQL/MySQL/MongoDB/Redis) or any off-chain storage.",
+    "Actual SMS OTP verification for Indian mobile numbers via providers like Twilio/MSG91."
   ],
   "imageRequirements": {
     "required": [],

@@ -1,78 +1,220 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T10:03:19.690Z",
+  "generatedAt": "2026-02-06T12:07:49.980Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 3,
-    "implemented": 3,
+    "total": 10,
+    "implemented": 5,
     "items": [
       {
-        "id": "REQ-11",
-        "summary": "Identify which backend canister functions are reported as “missing” after the latest deployment by reproducing the issue in the running app and capturing the exact console/runtime errors (e.g., \"actor.<method> is not a function\" or Candid method-not-found).",
+        "id": "REQ-17",
+        "summary": "Replace the current Internet Identity-based authentication flow with an in-app, manual-credentials authentication system supporting three roles: Jobseeker, Employer, and Admin, and ensure all role-gated pages are inaccessible until the appropriate role is logged in.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/actorDiagnostics.ts",
-          "frontend/src/hooks/useActor.ts",
-          "frontend/docs/missing-canister-functions.md"
+          "frontend/src/main.tsx",
+          "frontend/src/backend.d.ts",
+          "frontend/src/auth/manualAuthTypes.ts",
+          "frontend/src/hooks/useManualAuth.tsx",
+          "frontend/src/components/auth/LoginPage.tsx",
+          "frontend/src/components/auth/ProtectedRoute.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/AppHeader.tsx",
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/pages/JobDetailPage.tsx",
+          "frontend/src/pages/EmployerCandidatesPage.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/auth/InternetIdentityHelpDialog.tsx",
+          "frontend/src/components/auth/RoleSetupModal.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/utils/actorDiagnostics.ts",
-          "frontend/docs/missing-canister-functions.md"
+          "frontend/src/backend.d.ts",
+          "frontend/src/auth/manualAuthTypes.ts",
+          "frontend/src/hooks/useManualAuth.tsx",
+          "frontend/src/components/auth/LoginPage.tsx",
+          "frontend/src/components/auth/ProtectedRoute.tsx",
+          "frontend/src/App.tsx",
+          "frontend/src/components/AppHeader.tsx",
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/src/pages/JobDetailPage.tsx",
+          "frontend/src/pages/EmployerCandidatesPage.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/auth/InternetIdentityHelpDialog.tsx",
+          "frontend/src/components/auth/RoleSetupModal.tsx"
         ]
       },
       {
-        "id": "REQ-12",
-        "summary": "Restore full parity between the frontend’s expected actor API and the backend canister’s exported Candid interface by ensuring all functions used in frontend/src/hooks/useQueries.ts exist and are callable on the deployed canister (including chooseRole, getCallerUserProfile, saveCallerUserProfile, getJobs, getJob, getJobsByEmployer, createJob, deleteJob, applyForJob, getApplicationsForCandidate, getApplicationsForJob, updateApplicationStatus).",
+        "id": "REQ-18",
+        "summary": "Implement secure credential handling on the backend for manual login: store passwords as salted hashes (never plaintext), issue server-generated session tokens on successful login, validate tokens on all protected backend methods, and provide logout/token invalidation.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-19",
+        "summary": "Add/extend backend data models to match a mobile-first Indian job portal: jobseeker profile fields (Full Name, Mobile Number, Email, Current/Last Company Name, Job Role/Process, Total Experience, Last Drawn Salary in ₹, Preferred Job Location, Active/Inactive), employer fields (Company Name, Contact Person Name, Mobile, Email, Business Location), and support editing profiles anytime.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-20",
+        "summary": "Implement JobHai-style employer credits and candidate-profile unlock system in the backend: admin-defined credit cost per unlock, employer credit balance, one-time unlock per candidate (no repeat deduction), permanent access after unlock, prevent unlock if insufficient credits, transaction-safe deduction, and unlock logs for admin audit.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-21",
+        "summary": "Update the employer candidate directory backend API to support limited pre-unlock views and full post-unlock views, including filter parameters (location, salary, experience, process/role) and ensuring locked fields (mobile, email, company name) are hidden until unlocked.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
+      },
+      {
+        "id": "REQ-22",
+        "summary": "Create an Admin Panel UI with full control over the platform: manage employers and jobseekers, manually add/deduct employer credits, set credit cost per unlock, view unlock activity logs, optionally approve/reject job postings, disable any account instantly, and show a metrics dashboard (total employers, total jobseekers, credits used, active jobs).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/actorGuards.ts",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/utils/actorDiagnostics.ts"
+          "frontend/src/pages/admin/AdminPanelPage.tsx",
+          "frontend/src/components/admin/AdminMetricsCards.tsx",
+          "frontend/src/components/admin/AdminEmployersTable.tsx",
+          "frontend/src/components/admin/AdminJobseekersTable.tsx",
+          "frontend/src/components/admin/AdminUnlockLogs.tsx",
+          "frontend/src/components/admin/AdminCreditsSettings.tsx",
+          "frontend/src/hooks/useAdminQueries.ts",
+          "frontend/src/backend.d.ts",
+          "frontend/src/App.tsx",
+          "frontend/src/components/AppHeader.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/utils/actorGuards.ts",
-          "frontend/src/hooks/useQueries.ts",
-          "frontend/src/utils/actorDiagnostics.ts"
+          "frontend/src/pages/admin/AdminPanelPage.tsx",
+          "frontend/src/components/admin/AdminMetricsCards.tsx",
+          "frontend/src/components/admin/AdminEmployersTable.tsx",
+          "frontend/src/components/admin/AdminJobseekersTable.tsx",
+          "frontend/src/components/admin/AdminUnlockLogs.tsx",
+          "frontend/src/components/admin/AdminCreditsSettings.tsx",
+          "frontend/src/hooks/useAdminQueries.ts",
+          "frontend/src/backend.d.ts",
+          "frontend/src/App.tsx",
+          "frontend/src/components/AppHeader.tsx"
         ]
       },
       {
-        "id": "REQ-13",
-        "summary": "Add user-facing error handling for actor call failures related to missing/unsupported methods so the UI shows a clear English message (and does not silently fail) when a backend method is unavailable, including on Job detail apply, Employer job creation, and application status update actions.",
+        "id": "REQ-23",
+        "summary": "Update Employer-facing UI to support credits + unlocking: show available credit balance, show locked candidate cards with a clear locked state, prompt for confirmation before unlock, and after unlock reveal full candidate details and mark as unlocked permanently.",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/utils/actorErrorMessages.ts",
-          "frontend/src/components/applications/CandidateApplyForm.tsx",
-          "frontend/src/components/jobs/EmployerJobForm.tsx",
-          "frontend/src/pages/EmployerJobApplicationsPage.tsx",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/components/employer/CandidateUnlockCard.tsx",
+          "frontend/src/components/employer/UnlockConfirmDialog.tsx",
+          "frontend/src/hooks/useEmployerCredits.ts",
+          "frontend/src/hooks/useUnlockCandidate.ts",
+          "frontend/src/pages/EmployerCandidatesPage.tsx",
+          "frontend/src/utils/actorErrorMessages.ts"
         ],
         "matchedFiles": [
-          "frontend/src/utils/actorErrorMessages.ts",
-          "frontend/src/components/applications/CandidateApplyForm.tsx",
-          "frontend/src/components/jobs/EmployerJobForm.tsx",
-          "frontend/src/pages/EmployerJobApplicationsPage.tsx",
-          "frontend/src/hooks/useQueries.ts"
+          "frontend/src/components/employer/CandidateUnlockCard.tsx",
+          "frontend/src/components/employer/UnlockConfirmDialog.tsx",
+          "frontend/src/hooks/useEmployerCredits.ts",
+          "frontend/src/hooks/useUnlockCandidate.ts",
+          "frontend/src/pages/EmployerCandidatesPage.tsx",
+          "frontend/src/utils/actorErrorMessages.ts"
         ]
+      },
+      {
+        "id": "REQ-24",
+        "summary": "Update Job posting and browsing to match Indian job portal expectations: salary displayed in ₹ only, mobile-first card-based listings, and fast filters (location, salary, experience, process) across job browse UI.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/formatInr.ts",
+          "frontend/src/pages/JobsBrowsePage.tsx",
+          "frontend/src/components/jobs/JobCard.tsx",
+          "frontend/src/pages/JobDetailPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/formatInr.ts",
+          "frontend/src/pages/JobsBrowsePage.tsx",
+          "frontend/src/components/jobs/JobCard.tsx",
+          "frontend/src/pages/JobDetailPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-25",
+        "summary": "Apply a fully custom, unique, colorful, mobile-first UI/UX theme across the app (while keeping ‘Instant Jobs’ branding), including distinct styling for employer vs jobseeker vs admin sections, without using Internet Identity-related visuals/copy.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/index.css",
+          "frontend/src/components/AppLayout.tsx",
+          "frontend/src/components/AppHeader.tsx",
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/tailwind.config.js"
+        ],
+        "matchedFiles": [
+          "frontend/src/index.css",
+          "frontend/src/components/AppLayout.tsx",
+          "frontend/src/components/AppHeader.tsx",
+          "frontend/src/pages/LandingPage.tsx",
+          "frontend/tailwind.config.js"
+        ]
+      },
+      {
+        "id": "REQ-26",
+        "summary": "Add any required data migration to preserve existing canister state when changing user/auth/profile schemas (only if the current deployed state would otherwise break), following the project’s conditional migration policy.",
+        "status": "unknown",
+        "plannedFiles": [],
+        "matchedFiles": []
       }
     ]
   },
   "changedFiles": [
+    "backend/main.mo",
+    "backend/migration.mo",
     "build-request.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/docs/missing-canister-functions.md",
+    "frontend/src/App.tsx",
+    "frontend/src/auth/manualAuthTypes.ts",
+    "frontend/src/backend.d.ts",
+    "frontend/src/backend.ts",
+    "frontend/src/components/AppHeader.tsx",
+    "frontend/src/components/AppLayout.tsx",
+    "frontend/src/components/admin/AdminCreditsSettings.tsx",
+    "frontend/src/components/admin/AdminEmployersTable.tsx",
+    "frontend/src/components/admin/AdminJobseekersTable.tsx",
+    "frontend/src/components/admin/AdminMetricsCards.tsx",
+    "frontend/src/components/admin/AdminUnlockLogs.tsx",
     "frontend/src/components/applications/CandidateApplyForm.tsx",
+    "frontend/src/components/auth/InternetIdentityHelpDialog.tsx",
+    "frontend/src/components/auth/LoginPage.tsx",
+    "frontend/src/components/auth/ProtectedRoute.tsx",
+    "frontend/src/components/auth/RoleSetupModal.tsx",
+    "frontend/src/components/employer/CandidateUnlockCard.tsx",
+    "frontend/src/components/employer/UnlockConfirmDialog.tsx",
     "frontend/src/components/jobs/EmployerJobForm.tsx",
+    "frontend/src/components/jobs/JobCard.tsx",
+    "frontend/src/declarations/backend.did.d.ts",
+    "frontend/src/declarations/backend.did.js",
+    "frontend/src/hooks/useAdminQueries.ts",
+    "frontend/src/hooks/useEmployerCredits.ts",
+    "frontend/src/hooks/useManualAuth.tsx",
     "frontend/src/hooks/useQueries.ts",
+    "frontend/src/hooks/useUnlockCandidate.ts",
+    "frontend/src/index.css",
+    "frontend/src/pages/CandidateDashboardPage.tsx",
+    "frontend/src/pages/EmployerCandidatesPage.tsx",
+    "frontend/src/pages/EmployerDashboardPage.tsx",
     "frontend/src/pages/EmployerJobApplicationsPage.tsx",
-    "frontend/src/utils/actorDiagnostics.ts",
+    "frontend/src/pages/JobDetailPage.tsx",
+    "frontend/src/pages/JobsBrowsePage.tsx",
+    "frontend/src/pages/LandingPage.tsx",
+    "frontend/src/pages/admin/AdminPanelPage.tsx",
     "frontend/src/utils/actorErrorMessages.ts",
-    "frontend/src/utils/actorGuards.ts",
+    "frontend/src/utils/formatInr.ts",
+    "frontend/tailwind.config.js",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

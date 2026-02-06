@@ -1,22 +1,22 @@
 import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet } from '@tanstack/react-router';
-import { useInternetIdentity } from './hooks/useInternetIdentity';
-import { useGetCallerUserProfile } from './hooks/useQueries';
+import { useManualAuth } from './hooks/useManualAuth';
 import LandingPage from './pages/LandingPage';
-import JobsBrowsePage from './pages/JobsBrowsePage';
-import JobDetailPage from './pages/JobDetailPage';
-import CandidateDashboardPage from './pages/CandidateDashboardPage';
-import EmployerDashboardPage from './pages/EmployerDashboardPage';
-import EmployerJobApplicationsPage from './pages/EmployerJobApplicationsPage';
+import LoginPage from './components/auth/LoginPage';
+import AdminPanelPage from './pages/admin/AdminPanelPage';
+import EmployerCandidatesPage from './pages/EmployerCandidatesPage';
 import AppLayout from './components/AppLayout';
-import RoleSetupModal from './components/auth/RoleSetupModal';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import { ThemeProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 
 function RootLayout() {
+  const { role } = useManualAuth();
+  
   return (
     <AppLayout>
-      <RoleSetupModal />
-      <Outlet />
+      <div data-role={role}>
+        <Outlet />
+      </div>
     </AppLayout>
   );
 }
@@ -31,43 +31,37 @@ const indexRoute = createRoute({
   component: LandingPage,
 });
 
-const jobsRoute = createRoute({
+const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/jobs',
-  component: JobsBrowsePage,
+  path: '/login',
+  component: LoginPage,
 });
 
-const jobDetailRoute = createRoute({
+const employerCandidatesRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/jobs/$jobId',
-  component: JobDetailPage,
+  path: '/employer/candidates',
+  component: () => (
+    <ProtectedRoute requiredRole="employer">
+      <EmployerCandidatesPage />
+    </ProtectedRoute>
+  ),
 });
 
-const candidateDashboardRoute = createRoute({
+const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/candidate/dashboard',
-  component: CandidateDashboardPage,
-});
-
-const employerDashboardRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/employer/dashboard',
-  component: EmployerDashboardPage,
-});
-
-const employerJobApplicationsRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: '/employer/jobs/$jobId/applications',
-  component: EmployerJobApplicationsPage,
+  path: '/admin',
+  component: () => (
+    <ProtectedRoute requiredRole="admin">
+      <AdminPanelPage />
+    </ProtectedRoute>
+  ),
 });
 
 const routeTree = rootRoute.addChildren([
   indexRoute,
-  jobsRoute,
-  jobDetailRoute,
-  candidateDashboardRoute,
-  employerDashboardRoute,
-  employerJobApplicationsRoute,
+  loginRoute,
+  employerCandidatesRoute,
+  adminRoute,
 ]);
 
 const router = createRouter({ routeTree });

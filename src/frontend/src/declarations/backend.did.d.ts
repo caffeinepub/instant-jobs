@@ -10,45 +10,50 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
-export interface ApplicationInput { 'jobId' : bigint, 'coverLetter' : string }
-export type ApplicationStatus = { 'hired' : null } |
-  { 'offer' : null } |
-  { 'interview' : null } |
-  { 'applied' : null } |
-  { 'rejected' : null } |
-  { 'withdrawn' : null };
 export interface CandidateProfile {
   'resume' : string,
+  'currentOrLastCompany' : string,
+  'jobRole' : string,
+  'totalExperience' : bigint,
+  'lastDrawnSalary' : bigint,
   'fullName' : string,
+  'mobileNumber' : MobileNumber,
+  'isActive' : boolean,
+  'email' : string,
+  'preferredLocation' : string,
   'skills' : Array<string>,
+}
+export interface Employer {
+  'principal' : Principal,
+  'credits' : bigint,
+  'creditsPurchased' : bigint,
 }
 export interface EmployerProfile {
   'description' : string,
+  'mobileNumber' : MobileNumber,
+  'businessLocation' : string,
+  'email' : string,
   'companyLogo' : string,
   'companyName' : string,
   'companyWebsite' : string,
+  'contactPersonName' : string,
 }
-export interface Job {
-  'id' : bigint,
-  'title' : string,
-  'salary' : [] | [bigint],
-  'description' : string,
-  'company' : string,
+export type MobileNumber = string;
+export interface UnlockRecord {
   'employer' : Principal,
-  'requirements' : Array<string>,
-  'location' : string,
-}
-export interface JobApplication {
-  'id' : bigint,
-  'status' : ApplicationStatus,
-  'jobId' : bigint,
-  'coverLetter' : string,
+  'timestamp' : bigint,
   'candidate' : Principal,
+  'creditsUsed' : bigint,
+  'profileDetails' : CandidateProfile,
+}
+export interface UnlockResult {
+  'status' : string,
+  'currentCredits' : bigint,
+  'remainingCredits' : bigint,
 }
 export interface UserProfile {
   'bio' : string,
   'linkedin' : string,
-  'role' : UserRole,
   'employer' : [] | [EmployerProfile],
   'candidate' : [] | [CandidateProfile],
   'github' : string,
@@ -58,31 +63,27 @@ export type UserRole = { 'admin' : null } |
   { 'guest' : null };
 export interface _SERVICE {
   '_initializeAccessControlWithSecret' : ActorMethod<[string], undefined>,
-  'applyForJob' : ActorMethod<[ApplicationInput], undefined>,
+  'addCredits' : ActorMethod<[Principal, bigint], undefined>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
-  'chooseRole' : ActorMethod<[UserRole], undefined>,
-  'createJob' : ActorMethod<[Job], undefined>,
-  'deleteJob' : ActorMethod<[bigint], undefined>,
-  'getAllUserProfiles' : ActorMethod<[], Array<UserProfile>>,
-  'getApplications' : ActorMethod<[], Array<JobApplication>>,
-  'getApplicationsForCandidate' : ActorMethod<
-    [Principal],
-    Array<JobApplication>
-  >,
-  'getApplicationsForJob' : ActorMethod<[bigint], Array<JobApplication>>,
+  'deductCredits' : ActorMethod<[Principal, bigint], undefined>,
+  'getAllEmployers' : ActorMethod<[], Array<Employer>>,
+  'getAllJobseekers' : ActorMethod<[], Array<Principal>>,
+  'getAllUnlockLogs' : ActorMethod<[], Array<[Principal, Array<UnlockRecord>]>>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getCallerUserRole' : ActorMethod<[], UserRole>,
-  'getJob' : ActorMethod<[bigint], Job>,
-  'getJobs' : ActorMethod<[], Array<Job>>,
-  'getJobsByEmployer' : ActorMethod<[Principal], Array<Job>>,
-  'getUserProfile' : ActorMethod<[Principal], UserProfile>,
+  'getCandidateDirectory' : ActorMethod<[], Array<UserProfile>>,
+  'getCreditBalance' : ActorMethod<[], bigint>,
+  'getCreditCostPerUnlock' : ActorMethod<[], bigint>,
+  'getCurrentUserProfile' : ActorMethod<[], [] | [UserProfile]>,
+  'getEmployerCredits' : ActorMethod<[Principal], [] | [Employer]>,
+  'getProfile' : ActorMethod<[Principal], UserProfile>,
+  'getSessionTimeout' : ActorMethod<[], bigint>,
+  'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
-  'updateApplicationStatus' : ActorMethod<
-    [bigint, ApplicationStatus],
-    undefined
-  >,
-  'updateUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'setCreditCostPerUnlock' : ActorMethod<[bigint], undefined>,
+  'setSessionTimeout' : ActorMethod<[bigint], undefined>,
+  'unlockCandidateProfile' : ActorMethod<[Principal], UnlockResult>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

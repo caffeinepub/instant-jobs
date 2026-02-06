@@ -30,6 +30,7 @@ const REQUIRED_METHODS = [
   { name: 'getApplicationsForCandidate', usedIn: 'useGetCandidateApplications (CandidateDashboardPage)' },
   { name: 'getApplicationsForJob', usedIn: 'useGetJobApplications (EmployerJobApplicationsPage)' },
   { name: 'updateApplicationStatus', usedIn: 'useUpdateApplicationStatus (EmployerJobApplicationsPage)' },
+  { name: 'getCandidateDirectory', usedIn: 'useGetCandidateDirectory (EmployerCandidatesPage)' },
 ];
 
 /**

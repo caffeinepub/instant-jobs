@@ -31,6 +31,15 @@ export function normalizeActorError(error: unknown): string {
       return 'You do not have permission to perform this action.';
     }
 
+    // Check for credit/unlock errors
+    if (message.includes('insufficient credits')) {
+      return 'Insufficient credits to unlock this profile. Please contact admin.';
+    }
+
+    if (message.includes('already unlocked')) {
+      return 'This profile has already been unlocked.';
+    }
+
     // Check for network/connection errors
     if (
       message.includes('network') ||

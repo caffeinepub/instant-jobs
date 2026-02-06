@@ -1,9 +1,7 @@
 import { Link, useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import { useInternetIdentity } from '../hooks/useInternetIdentity';
-import { useGetCallerUserProfile } from '../hooks/useQueries';
-import { useQueryClient } from '@tanstack/react-query';
-import { Briefcase, User, LogOut, Menu, HelpCircle } from 'lucide-react';
+import { useManualAuth } from '../hooks/useManualAuth';
+import { User, LogOut, Menu, Users, Shield } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,60 +10,33 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import InternetIdentityHelpDialog from './auth/InternetIdentityHelpDialog';
+import { Badge } from '@/components/ui/badge';
 
 export default function AppHeader() {
-  const { identity, login, clear, loginStatus } = useInternetIdentity();
-  const { data: userProfile } = useGetCallerUserProfile();
-  const queryClient = useQueryClient();
+  const { isAuthenticated, role, logout } = useManualAuth();
   const navigate = useNavigate();
 
-  const isAuthenticated = !!identity;
-  const isLoggingIn = loginStatus === 'logging-in';
-
-  const handleAuth = async () => {
-    if (isAuthenticated) {
-      await clear();
-      queryClient.clear();
-      navigate({ to: '/' });
-    } else {
-      try {
-        await login();
-      } catch (error: any) {
-        console.error('Login error:', error);
-        if (error.message === 'User is already authenticated') {
-          await clear();
-          setTimeout(() => login(), 300);
-        }
-      }
-    }
+  const handleLogout = async () => {
+    await logout();
+    navigate({ to: '/' });
   };
-
-  const isCandidate = userProfile?.candidate !== null && userProfile?.candidate !== undefined;
-  const isEmployer = userProfile?.employer !== null && userProfile?.employer !== undefined;
 
   const navLinks = (
     <>
-      <Link
-        to="/jobs"
-        className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
-      >
-        Browse Jobs
-      </Link>
-      {isAuthenticated && isCandidate && (
+      {isAuthenticated && role === 'employer' && (
         <Link
-          to="/candidate/dashboard"
+          to="/employer/candidates"
           className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
         >
-          My Applications
+          Candidates
         </Link>
       )}
-      {isAuthenticated && isEmployer && (
+      {isAuthenticated && role === 'admin' && (
         <Link
-          to="/employer/dashboard"
+          to="/admin"
           className="text-sm font-medium text-foreground/80 transition-colors hover:text-foreground"
         >
-          Employer Dashboard
+          Admin Panel
         </Link>
       )}
     </>
@@ -91,46 +62,44 @@ export default function AppHeader() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  <User className="h-5 w-5" />
+                  {role === 'admin' ? <Shield className="h-5 w-5" /> : <User className="h-5 w-5" />}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                {userProfile?.candidate && (
+                <div className="px-2 py-1.5">
+                  <p className="text-sm font-medium">Logged in as</p>
+                  <Badge variant="secondary" className="mt-1">
+                    {role}
+                  </Badge>
+                </div>
+                <DropdownMenuSeparator />
+                {role === 'employer' && (
                   <DropdownMenuItem asChild>
-                    <Link to="/candidate/dashboard" className="flex items-center gap-2">
-                      <Briefcase className="h-4 w-4" />
-                      My Applications
+                    <Link to="/employer/candidates" className="flex items-center gap-2">
+                      <Users className="h-4 w-4" />
+                      Candidates
                     </Link>
                   </DropdownMenuItem>
                 )}
-                {userProfile?.employer && (
+                {role === 'admin' && (
                   <DropdownMenuItem asChild>
-                    <Link to="/employer/dashboard" className="flex items-center gap-2">
-                      <Briefcase className="h-4 w-4" />
-                      Employer Dashboard
+                    <Link to="/admin" className="flex items-center gap-2">
+                      <Shield className="h-4 w-4" />
+                      Admin Panel
                     </Link>
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleAuth} className="flex items-center gap-2 text-destructive">
+                <DropdownMenuItem onClick={handleLogout} className="flex items-center gap-2 text-destructive">
                   <LogOut className="h-4 w-4" />
                   Logout
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <>
-              <InternetIdentityHelpDialog
-                trigger={
-                  <Button variant="ghost" size="icon" className="hidden sm:inline-flex">
-                    <HelpCircle className="h-5 w-5" />
-                  </Button>
-                }
-              />
-              <Button onClick={handleAuth} disabled={isLoggingIn} size="sm">
-                {isLoggingIn ? 'Signing in...' : 'Sign in with Internet Identity'}
-              </Button>
-            </>
+            <Button asChild size="sm">
+              <Link to="/login">Login</Link>
+            </Button>
           )}
 
           <Sheet>

@@ -1,8 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Search, Briefcase, Users, TrendingUp, CheckCircle, ArrowRight, Shield } from 'lucide-react';
-import InternetIdentityHelpDialog from '../components/auth/InternetIdentityHelpDialog';
+import { Search, Briefcase, Users, TrendingUp, ArrowRight } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -24,15 +23,15 @@ export default function LandingPage() {
               </div>
               <div className="flex flex-col gap-4 sm:flex-row">
                 <Button asChild size="lg" className="text-base">
-                  <Link to="/jobs">
+                  <Link to="/login">
                     <Search className="mr-2 h-5 w-5" />
-                    Find Jobs
+                    Get Started
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg" className="text-base">
-                  <Link to="/employer/dashboard">
+                  <Link to="/login">
                     <Briefcase className="mr-2 h-5 w-5" />
-                    Hire Candidates
+                    For Employers
                   </Link>
                 </Button>
               </div>
@@ -95,42 +94,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Internet Identity Help Section */}
-      <section className="bg-muted/30 py-20 md:py-24">
-        <div className="container">
-          <div className="mx-auto max-w-3xl">
-            <Card className="border-2 border-primary/20">
-              <CardContent className="p-8">
-                <div className="flex flex-col items-center gap-6 text-center">
-                  <div className="inline-flex rounded-full bg-primary/10 p-4">
-                    <Shield className="h-8 w-8 text-primary" />
-                  </div>
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-bold md:text-3xl">Secure Sign In with Internet Identity</h2>
-                    <p className="text-muted-foreground">
-                      We use Internet Identity for secure, privacy-focused authentication. No passwords, no tracking—just safe and simple sign in.
-                    </p>
-                  </div>
-                  <InternetIdentityHelpDialog
-                    trigger={
-                      <Button size="lg" variant="outline" className="gap-2">
-                        Learn How to Sign In
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    }
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Note: Google sign-in is not available. Internet Identity provides enhanced security and privacy for your account.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       {/* How It Works */}
-      <section className="py-20 md:py-24">
+      <section className="bg-muted/30 py-20 md:py-24">
         <div className="container">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-3xl font-bold md:text-4xl">How It Works</h2>
@@ -143,16 +108,16 @@ export default function LandingPage() {
               </div>
               <h3 className="mb-2 text-xl font-semibold">Create Your Profile</h3>
               <p className="text-muted-foreground">
-                Sign in with Internet Identity and tell us about your skills or hiring needs
+                Sign in and tell us about your skills or hiring needs
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary text-2xl font-bold text-primary-foreground">
                 2
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Browse & Apply</h3>
+              <h3 className="mb-2 text-xl font-semibold">Browse & Connect</h3>
               <p className="text-muted-foreground">
-                Search for jobs or candidates that match your criteria
+                Search for candidates that match your criteria
               </p>
             </div>
             <div className="flex flex-col items-center text-center">
@@ -178,8 +143,8 @@ export default function LandingPage() {
                 Join thousands of job seekers and employers who have found success on Instant Jobs
               </p>
               <Button asChild size="lg" className="text-base">
-                <Link to="/jobs">
-                  Browse Jobs Now
+                <Link to="/login">
+                  Get Started Now
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>

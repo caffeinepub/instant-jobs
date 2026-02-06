@@ -8,177 +8,189 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const ApplicationInput = IDL.Record({
-  'jobId' : IDL.Nat,
-  'coverLetter' : IDL.Text,
-});
 export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
   'guest' : IDL.Null,
 });
-export const Job = IDL.Record({
-  'id' : IDL.Nat,
-  'title' : IDL.Text,
-  'salary' : IDL.Opt(IDL.Nat),
-  'description' : IDL.Text,
-  'company' : IDL.Text,
+export const Employer = IDL.Record({
+  'principal' : IDL.Principal,
+  'credits' : IDL.Nat,
+  'creditsPurchased' : IDL.Nat,
+});
+export const MobileNumber = IDL.Text;
+export const CandidateProfile = IDL.Record({
+  'resume' : IDL.Text,
+  'currentOrLastCompany' : IDL.Text,
+  'jobRole' : IDL.Text,
+  'totalExperience' : IDL.Nat,
+  'lastDrawnSalary' : IDL.Nat,
+  'fullName' : IDL.Text,
+  'mobileNumber' : MobileNumber,
+  'isActive' : IDL.Bool,
+  'email' : IDL.Text,
+  'preferredLocation' : IDL.Text,
+  'skills' : IDL.Vec(IDL.Text),
+});
+export const UnlockRecord = IDL.Record({
   'employer' : IDL.Principal,
-  'requirements' : IDL.Vec(IDL.Text),
-  'location' : IDL.Text,
+  'timestamp' : IDL.Int,
+  'candidate' : IDL.Principal,
+  'creditsUsed' : IDL.Nat,
+  'profileDetails' : CandidateProfile,
 });
 export const EmployerProfile = IDL.Record({
   'description' : IDL.Text,
+  'mobileNumber' : MobileNumber,
+  'businessLocation' : IDL.Text,
+  'email' : IDL.Text,
   'companyLogo' : IDL.Text,
   'companyName' : IDL.Text,
   'companyWebsite' : IDL.Text,
-});
-export const CandidateProfile = IDL.Record({
-  'resume' : IDL.Text,
-  'fullName' : IDL.Text,
-  'skills' : IDL.Vec(IDL.Text),
+  'contactPersonName' : IDL.Text,
 });
 export const UserProfile = IDL.Record({
   'bio' : IDL.Text,
   'linkedin' : IDL.Text,
-  'role' : UserRole,
   'employer' : IDL.Opt(EmployerProfile),
   'candidate' : IDL.Opt(CandidateProfile),
   'github' : IDL.Text,
 });
-export const ApplicationStatus = IDL.Variant({
-  'hired' : IDL.Null,
-  'offer' : IDL.Null,
-  'interview' : IDL.Null,
-  'applied' : IDL.Null,
-  'rejected' : IDL.Null,
-  'withdrawn' : IDL.Null,
-});
-export const JobApplication = IDL.Record({
-  'id' : IDL.Nat,
-  'status' : ApplicationStatus,
-  'jobId' : IDL.Nat,
-  'coverLetter' : IDL.Text,
-  'candidate' : IDL.Principal,
+export const UnlockResult = IDL.Record({
+  'status' : IDL.Text,
+  'currentCredits' : IDL.Nat,
+  'remainingCredits' : IDL.Nat,
 });
 
 export const idlService = IDL.Service({
   '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-  'applyForJob' : IDL.Func([ApplicationInput], [], []),
+  'addCredits' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
   'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-  'chooseRole' : IDL.Func([UserRole], [], []),
-  'createJob' : IDL.Func([Job], [], []),
-  'deleteJob' : IDL.Func([IDL.Nat], [], []),
-  'getAllUserProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
-  'getApplications' : IDL.Func([], [IDL.Vec(JobApplication)], ['query']),
-  'getApplicationsForCandidate' : IDL.Func(
-      [IDL.Principal],
-      [IDL.Vec(JobApplication)],
-      ['query'],
-    ),
-  'getApplicationsForJob' : IDL.Func(
-      [IDL.Nat],
-      [IDL.Vec(JobApplication)],
+  'deductCredits' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+  'getAllEmployers' : IDL.Func([], [IDL.Vec(Employer)], ['query']),
+  'getAllJobseekers' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+  'getAllUnlockLogs' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Vec(UnlockRecord)))],
       ['query'],
     ),
   'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-  'getJob' : IDL.Func([IDL.Nat], [Job], ['query']),
-  'getJobs' : IDL.Func([], [IDL.Vec(Job)], ['query']),
-  'getJobsByEmployer' : IDL.Func([IDL.Principal], [IDL.Vec(Job)], ['query']),
-  'getUserProfile' : IDL.Func([IDL.Principal], [UserProfile], ['query']),
+  'getCandidateDirectory' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
+  'getCreditBalance' : IDL.Func([], [IDL.Nat], ['query']),
+  'getCreditCostPerUnlock' : IDL.Func([], [IDL.Nat], ['query']),
+  'getCurrentUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+  'getEmployerCredits' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(Employer)],
+      ['query'],
+    ),
+  'getProfile' : IDL.Func([IDL.Principal], [UserProfile], ['query']),
+  'getSessionTimeout' : IDL.Func([], [IDL.Int], ['query']),
+  'getUserProfile' : IDL.Func(
+      [IDL.Principal],
+      [IDL.Opt(UserProfile)],
+      ['query'],
+    ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-  'updateApplicationStatus' : IDL.Func([IDL.Nat, ApplicationStatus], [], []),
-  'updateUserProfile' : IDL.Func([UserProfile], [], []),
+  'setCreditCostPerUnlock' : IDL.Func([IDL.Nat], [], []),
+  'setSessionTimeout' : IDL.Func([IDL.Int], [], []),
+  'unlockCandidateProfile' : IDL.Func([IDL.Principal], [UnlockResult], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
-  const ApplicationInput = IDL.Record({
-    'jobId' : IDL.Nat,
-    'coverLetter' : IDL.Text,
-  });
   const UserRole = IDL.Variant({
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
   });
-  const Job = IDL.Record({
-    'id' : IDL.Nat,
-    'title' : IDL.Text,
-    'salary' : IDL.Opt(IDL.Nat),
-    'description' : IDL.Text,
-    'company' : IDL.Text,
+  const Employer = IDL.Record({
+    'principal' : IDL.Principal,
+    'credits' : IDL.Nat,
+    'creditsPurchased' : IDL.Nat,
+  });
+  const MobileNumber = IDL.Text;
+  const CandidateProfile = IDL.Record({
+    'resume' : IDL.Text,
+    'currentOrLastCompany' : IDL.Text,
+    'jobRole' : IDL.Text,
+    'totalExperience' : IDL.Nat,
+    'lastDrawnSalary' : IDL.Nat,
+    'fullName' : IDL.Text,
+    'mobileNumber' : MobileNumber,
+    'isActive' : IDL.Bool,
+    'email' : IDL.Text,
+    'preferredLocation' : IDL.Text,
+    'skills' : IDL.Vec(IDL.Text),
+  });
+  const UnlockRecord = IDL.Record({
     'employer' : IDL.Principal,
-    'requirements' : IDL.Vec(IDL.Text),
-    'location' : IDL.Text,
+    'timestamp' : IDL.Int,
+    'candidate' : IDL.Principal,
+    'creditsUsed' : IDL.Nat,
+    'profileDetails' : CandidateProfile,
   });
   const EmployerProfile = IDL.Record({
     'description' : IDL.Text,
+    'mobileNumber' : MobileNumber,
+    'businessLocation' : IDL.Text,
+    'email' : IDL.Text,
     'companyLogo' : IDL.Text,
     'companyName' : IDL.Text,
     'companyWebsite' : IDL.Text,
-  });
-  const CandidateProfile = IDL.Record({
-    'resume' : IDL.Text,
-    'fullName' : IDL.Text,
-    'skills' : IDL.Vec(IDL.Text),
+    'contactPersonName' : IDL.Text,
   });
   const UserProfile = IDL.Record({
     'bio' : IDL.Text,
     'linkedin' : IDL.Text,
-    'role' : UserRole,
     'employer' : IDL.Opt(EmployerProfile),
     'candidate' : IDL.Opt(CandidateProfile),
     'github' : IDL.Text,
   });
-  const ApplicationStatus = IDL.Variant({
-    'hired' : IDL.Null,
-    'offer' : IDL.Null,
-    'interview' : IDL.Null,
-    'applied' : IDL.Null,
-    'rejected' : IDL.Null,
-    'withdrawn' : IDL.Null,
-  });
-  const JobApplication = IDL.Record({
-    'id' : IDL.Nat,
-    'status' : ApplicationStatus,
-    'jobId' : IDL.Nat,
-    'coverLetter' : IDL.Text,
-    'candidate' : IDL.Principal,
+  const UnlockResult = IDL.Record({
+    'status' : IDL.Text,
+    'currentCredits' : IDL.Nat,
+    'remainingCredits' : IDL.Nat,
   });
   
   return IDL.Service({
     '_initializeAccessControlWithSecret' : IDL.Func([IDL.Text], [], []),
-    'applyForJob' : IDL.Func([ApplicationInput], [], []),
+    'addCredits' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
     'assignCallerUserRole' : IDL.Func([IDL.Principal, UserRole], [], []),
-    'chooseRole' : IDL.Func([UserRole], [], []),
-    'createJob' : IDL.Func([Job], [], []),
-    'deleteJob' : IDL.Func([IDL.Nat], [], []),
-    'getAllUserProfiles' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
-    'getApplications' : IDL.Func([], [IDL.Vec(JobApplication)], ['query']),
-    'getApplicationsForCandidate' : IDL.Func(
-        [IDL.Principal],
-        [IDL.Vec(JobApplication)],
-        ['query'],
-      ),
-    'getApplicationsForJob' : IDL.Func(
-        [IDL.Nat],
-        [IDL.Vec(JobApplication)],
+    'deductCredits' : IDL.Func([IDL.Principal, IDL.Nat], [], []),
+    'getAllEmployers' : IDL.Func([], [IDL.Vec(Employer)], ['query']),
+    'getAllJobseekers' : IDL.Func([], [IDL.Vec(IDL.Principal)], ['query']),
+    'getAllUnlockLogs' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Principal, IDL.Vec(UnlockRecord)))],
         ['query'],
       ),
     'getCallerUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getCallerUserRole' : IDL.Func([], [UserRole], ['query']),
-    'getJob' : IDL.Func([IDL.Nat], [Job], ['query']),
-    'getJobs' : IDL.Func([], [IDL.Vec(Job)], ['query']),
-    'getJobsByEmployer' : IDL.Func([IDL.Principal], [IDL.Vec(Job)], ['query']),
-    'getUserProfile' : IDL.Func([IDL.Principal], [UserProfile], ['query']),
+    'getCandidateDirectory' : IDL.Func([], [IDL.Vec(UserProfile)], ['query']),
+    'getCreditBalance' : IDL.Func([], [IDL.Nat], ['query']),
+    'getCreditCostPerUnlock' : IDL.Func([], [IDL.Nat], ['query']),
+    'getCurrentUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
+    'getEmployerCredits' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(Employer)],
+        ['query'],
+      ),
+    'getProfile' : IDL.Func([IDL.Principal], [UserProfile], ['query']),
+    'getSessionTimeout' : IDL.Func([], [IDL.Int], ['query']),
+    'getUserProfile' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Opt(UserProfile)],
+        ['query'],
+      ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
-    'updateApplicationStatus' : IDL.Func([IDL.Nat, ApplicationStatus], [], []),
-    'updateUserProfile' : IDL.Func([UserProfile], [], []),
+    'setCreditCostPerUnlock' : IDL.Func([IDL.Nat], [], []),
+    'setSessionTimeout' : IDL.Func([IDL.Int], [], []),
+    'unlockCandidateProfile' : IDL.Func([IDL.Principal], [UnlockResult], []),
   });
 };
 

@@ -4,75 +4,88 @@
 
 @layer base {
     :root {
-        --radius: 0.5rem;
+        --radius: 0.75rem;
         
-        /* Warm, earthy palette - Light mode */
-        --background: 0.98 0.005 40;
-        --foreground: 0.25 0.015 40;
+        /* Vibrant, colorful palette - Light mode */
+        --background: 0.99 0.005 280;
+        --foreground: 0.20 0.020 260;
         --card: 1 0 0;
-        --card-foreground: 0.25 0.015 40;
+        --card-foreground: 0.20 0.020 260;
         --popover: 1 0 0;
-        --popover-foreground: 0.25 0.015 40;
+        --popover-foreground: 0.20 0.020 260;
         
-        /* Warm terracotta primary */
-        --primary: 0.55 0.18 25;
-        --primary-foreground: 0.98 0.005 40;
+        /* Vibrant coral-pink primary */
+        --primary: 0.62 0.24 15;
+        --primary-foreground: 0.99 0.005 280;
         
-        /* Soft sage secondary */
-        --secondary: 0.92 0.02 140;
-        --secondary-foreground: 0.25 0.015 40;
+        /* Teal secondary */
+        --secondary: 0.70 0.16 180;
+        --secondary-foreground: 0.99 0.005 280;
         
-        --muted: 0.95 0.01 40;
-        --muted-foreground: 0.50 0.01 40;
-        --accent: 0.94 0.02 60;
-        --accent-foreground: 0.25 0.015 40;
+        --muted: 0.96 0.01 260;
+        --muted-foreground: 0.55 0.015 260;
+        --accent: 0.92 0.08 45;
+        --accent-foreground: 0.20 0.020 260;
         
-        --destructive: 0.55 0.22 15;
-        --destructive-foreground: 0.98 0.005 40;
+        --destructive: 0.55 0.25 25;
+        --destructive-foreground: 0.99 0.005 280;
         
-        --border: 0.88 0.01 40;
-        --input: 0.88 0.01 40;
-        --ring: 0.55 0.18 25;
+        --border: 0.90 0.01 260;
+        --input: 0.90 0.01 260;
+        --ring: 0.62 0.24 15;
         
-        --chart-1: 0.55 0.18 25;
-        --chart-2: 0.65 0.15 140;
-        --chart-3: 0.60 0.16 200;
-        --chart-4: 0.70 0.14 50;
-        --chart-5: 0.50 0.20 340;
+        --chart-1: 0.62 0.24 15;
+        --chart-2: 0.70 0.16 180;
+        --chart-3: 0.65 0.20 280;
+        --chart-4: 0.68 0.18 140;
+        --chart-5: 0.60 0.22 320;
     }
 
     .dark {
-        --background: 0.15 0.01 40;
-        --foreground: 0.95 0.005 40;
-        --card: 0.20 0.015 40;
-        --card-foreground: 0.95 0.005 40;
-        --popover: 0.18 0.015 40;
-        --popover-foreground: 0.95 0.005 40;
+        --background: 0.18 0.015 260;
+        --foreground: 0.96 0.005 280;
+        --card: 0.22 0.020 260;
+        --card-foreground: 0.96 0.005 280;
+        --popover: 0.20 0.018 260;
+        --popover-foreground: 0.96 0.005 280;
         
-        /* Brighter terracotta for dark mode */
-        --primary: 0.65 0.20 25;
-        --primary-foreground: 0.15 0.01 40;
+        /* Brighter coral-pink for dark mode */
+        --primary: 0.68 0.26 15;
+        --primary-foreground: 0.18 0.015 260;
         
-        --secondary: 0.30 0.03 140;
-        --secondary-foreground: 0.95 0.005 40;
+        --secondary: 0.65 0.18 180;
+        --secondary-foreground: 0.96 0.005 280;
         
-        --muted: 0.25 0.02 40;
-        --muted-foreground: 0.65 0.01 40;
-        --accent: 0.28 0.03 60;
-        --accent-foreground: 0.95 0.005 40;
+        --muted: 0.28 0.025 260;
+        --muted-foreground: 0.68 0.015 260;
+        --accent: 0.35 0.10 45;
+        --accent-foreground: 0.96 0.005 280;
         
-        --destructive: 0.60 0.24 15;
-        --destructive-foreground: 0.15 0.01 40;
+        --destructive: 0.60 0.26 25;
+        --destructive-foreground: 0.18 0.015 260;
         
-        --border: 0.30 0.02 40;
-        --input: 0.30 0.02 40;
-        --ring: 0.65 0.20 25;
+        --border: 0.32 0.025 260;
+        --input: 0.32 0.025 260;
+        --ring: 0.68 0.26 15;
         
-        --chart-1: 0.65 0.20 25;
-        --chart-2: 0.70 0.18 140;
-        --chart-3: 0.65 0.18 200;
-        --chart-4: 0.75 0.16 50;
-        --chart-5: 0.60 0.22 340;
+        --chart-1: 0.68 0.26 15;
+        --chart-2: 0.72 0.18 180;
+        --chart-3: 0.68 0.22 280;
+        --chart-4: 0.70 0.20 140;
+        --chart-5: 0.65 0.24 320;
+    }
+
+    /* Role-specific theme accents */
+    .role-jobseeker {
+        --role-accent: 0.65 0.20 280;
+    }
+
+    .role-employer {
+        --role-accent: 0.70 0.16 180;
+    }
+
+    .role-admin {
+        --role-accent: 0.60 0.22 320;
     }
 
     * {

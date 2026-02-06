@@ -1,12 +1,19 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 7,
-  "summary": "Plan to clone the Wrokindia.in website/app (initially also requested renaming branding from Workindia to Instant Jobs).",
-  "architectural_notes": [],
-  "known_issues": [
-    "User reports that some functions are missing after deployment; needs investigation and restoration of expected functionality."
+  "projectStateVersion": 15,
+  "summary": "Shift scope to build a mobile-first Indian job portal (Instant Jobs) inspired by JobHai.com with similar workflows and monetization (credits-based jobseeker profile unlock), but with original colorful branding and a traditional manual-credentials authentication system for Jobseeker/Employer/Admin plus an Admin panel to control credits and moderation.",
+  "architectural_notes": [
+    "Authentication decision: remove Internet Identity; use traditional username/email + password logins with RBAC for Jobseeker/Employer/Admin.",
+    "Admin login to be supported with manual credentials (currently provided as admin@ppsjobs.com / 9277492395); ensure secrets are stored securely (not hardcoded) and support changing credentials."
   ],
-  "isFixRequest": true,
+  "known_issues": [
+    "User reports that some functions are missing after deployment; needs investigation and restoration of expected functionality.",
+    "Employer panel appears to be using employee/candidate UI; needs correction to proper Employer dashboard.",
+    "Currency is displayed as $ instead of ₹ in the UI.",
+    "Employers cannot view candidate details in the candidate browsing/search (candidate directory) flow; needs a candidate detail view and/or data access fix.",
+    "Security risk to address: admin credentials were provided explicitly; must not be hardcoded or stored in plaintext—use secure storage + hashing and allow rotation."
+  ],
+  "isFixRequest": false,
   "existing_features": [
     {
       "id": "feature-implement-internet-identity-authentication-and-an-app-level-user-model-that-supports-two-roles-candidate-and-employer-provide-a-role-selection-confirmation-step-on-first-sign-in-and-persist-the-chosen-role-for-subsequent-sessions",
@@ -103,6 +110,62 @@
         "REQ-13"
       ],
       "version": 1
+    },
+    {
+      "id": "feature-add-frontend-react-query-hook-s-to-call-the-new-backend-candidate-directory-api-with-guarded-actor-method-checks-and-usable-filter-parameters",
+      "title": "Add frontend React Query hook(s) to call the new backend candidate-directory API with guarded actor-method checks and usable filter parameters.",
+      "reqIds": [
+        "REQ-15"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-employer-facing-ui-page-to-browse-search-jobseekers-with-filters-and-add-routing-navigation-so-employers-can-easily-access-it",
+      "title": "Create an Employer-facing UI page to browse/search jobseekers with filters, and add routing/navigation so Employers can easily access it.",
+      "reqIds": [
+        "REQ-16"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-replace-the-current-internet-identity-based-authentication-flow-with-an-in-app-manual-credentials-authentication-system-supporting-three-roles-jobseeker-employer-and-admin-and-ensure-all-role-gated-pages-are-inaccessible-until-the-appropriate-role-is-logged-in",
+      "title": "Replace the current Internet Identity-based authentication flow with an in-app, manual-credentials authentication system supporting three roles: Jobseeker, Employer, and Admin, and ensure all role-gated pages are inaccessible until the appropriate role is logged in.",
+      "reqIds": [
+        "REQ-17"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-create-an-admin-panel-ui-with-full-control-over-the-platform-manage-employers-and-jobseekers-manually-add-deduct-employer-credits-set-credit-cost-per-unlock-view-unlock-activity-logs-optionally-approve-reject-job-postings-disable-any-account-instantly-and-show-a-metrics-dashboard-total-employers-total-jobseekers-credits-used-active-jobs",
+      "title": "Create an Admin Panel UI with full control over the platform: manage employers and jobseekers, manually add/deduct employer credits, set credit cost per unlock, view unlock activity logs, optionally approve/reject job postings, disable any account instantly, and show a metrics dashboard (total employers, total jobseekers, credits used, active jobs).",
+      "reqIds": [
+        "REQ-22"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-employer-facing-ui-to-support-credits-unlocking-show-available-credit-balance-show-locked-candidate-cards-with-a-clear-locked-state-prompt-for-confirmation-before-unlock-and-after-unlock-reveal-full-candidate-details-and-mark-as-unlocked-permanently",
+      "title": "Update Employer-facing UI to support credits + unlocking: show available credit balance, show locked candidate cards with a clear locked state, prompt for confirmation before unlock, and after unlock reveal full candidate details and mark as unlocked permanently.",
+      "reqIds": [
+        "REQ-23"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-update-job-posting-and-browsing-to-match-indian-job-portal-expectations-salary-displayed-in-only-mobile-first-card-based-listings-and-fast-filters-location-salary-experience-process-across-job-browse-ui",
+      "title": "Update Job posting and browsing to match Indian job portal expectations: salary displayed in ₹ only, mobile-first card-based listings, and fast filters (location, salary, experience, process) across job browse UI.",
+      "reqIds": [
+        "REQ-24"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-fully-custom-unique-colorful-mobile-first-ui-ux-theme-across-the-app-while-keeping-instant-jobs-branding-including-distinct-styling-for-employer-vs-jobseeker-vs-admin-sections-without-using-internet-identity-related-visuals-copy",
+      "title": "Apply a fully custom, unique, colorful, mobile-first UI/UX theme across the app (while keeping ‘Instant Jobs’ branding), including distinct styling for employer vs jobseeker vs admin sections, without using Internet Identity-related visuals/copy.",
+      "reqIds": [
+        "REQ-25"
+      ],
+      "version": 1
     }
   ],
   "new_feature_requests": [
@@ -130,6 +193,114 @@
       "id": "AR-3",
       "summary": "Add real Google Authentication for login & signup (Google OAuth sign-in).",
       "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Fix Employer panel UI/UX so it is clearly an Employer dashboard (not resembling an employee/candidate panel).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-6",
+      "summary": "Replace currency display from $ to ₹ across the product UI.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-7",
+      "summary": "Develop/enable backend data storage so all app features work end-to-end (persist jobs, applications, and user profiles).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-8",
+      "summary": "Enable Employers to access a searchable/browsable database of jobseekers (candidate directory) with filtering capabilities.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-9",
+      "summary": "Add backend canister query API(s) that allow an authenticated Employer to browse/search a directory of all available jobseekers (Candidates) on the platform.",
+      "reqIds": [
+        "REQ-14"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-10",
+      "summary": "Allow Employers to view full candidate details from the candidate directory (candidate profile/detail view) and ensure Employers have access to the jobseeker database.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-11",
+      "summary": "Replace Internet Identity/unsupported auth with a traditional manual-credentials authentication system for Jobseeker, Employer, and Admin (role-based access control; dashboards hidden until login).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-12",
+      "summary": "Implement credits-based jobseeker profile unlock system: blurred/limited employer view pre-unlock, one-time unlock with no repeat deductions, permanent access post-unlock, prevent unlock if insufficient credits, confirm before unlock, transaction-safe deduction.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-13",
+      "summary": "Build Admin panel for full control: manage employers/jobseekers, manually add/deduct employer credits, define credit cost per unlock, view unlock activity/logs, optionally approve/reject job postings, disable accounts, show key metrics dashboard.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-14",
+      "summary": "Jobseeker module enhancements: required profile fields (name, mobile, email, company, role/process, experience, last salary ₹, preferred location, active/inactive), edit anytime, apply for jobs, view applied jobs list.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-15",
+      "summary": "Create a fully custom, unique, colorful, mobile-first UI/UX theme (JobHai-style flows/layout cues but original branding/colors/components) including locked-profile UI states and fast filters (location/salary/experience/process).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-17",
+      "summary": "Implement secure credential handling on the backend for manual login: store passwords as salted hashes (never plaintext), issue server-generated session tokens on successful login, validate tokens on all protected backend methods, and provide logout/token invalidation.",
+      "reqIds": [
+        "REQ-18"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-18",
+      "summary": "Add/extend backend data models to match a mobile-first Indian job portal: jobseeker profile fields (Full Name, Mobile Number, Email, Current/Last Company Name, Job Role/Process, Total Experience, Last Drawn Salary in ₹, Preferred Job Location, Active/Inactive), employer fields (Company Name, Contact Person Name, Mobile, Email, Business Location), and support editing profiles anytime.",
+      "reqIds": [
+        "REQ-19"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-19",
+      "summary": "Implement JobHai-style employer credits and candidate-profile unlock system in the backend: admin-defined credit cost per unlock, employer credit balance, one-time unlock per candidate (no repeat deduction), permanent access after unlock, prevent unlock if insufficient credits, transaction-safe deduction, and unlock logs for admin audit.",
+      "reqIds": [
+        "REQ-20"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-20",
+      "summary": "Update the employer candidate directory backend API to support limited pre-unlock views and full post-unlock views, including filter parameters (location, salary, experience, process/role) and ensuring locked fields (mobile, email, company name) are hidden until unlocked.",
+      "reqIds": [
+        "REQ-21"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-25",
+      "summary": "Add any required data migration to preserve existing canister state when changing user/auth/profile schemas (only if the current deployed state would otherwise break), following the project’s conditional migration policy.",
+      "reqIds": [
+        "REQ-26"
+      ],
       "status": "pending"
     }
   ],

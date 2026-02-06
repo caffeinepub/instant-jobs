@@ -1,33 +1,53 @@
 import Array "mo:core/Array";
 import Order "mo:core/Order";
 import Map "mo:core/Map";
+import Set "mo:core/Set";
 import Text "mo:core/Text";
 import Nat "mo:core/Nat";
+import Int "mo:core/Int";
 import Iter "mo:core/Iter";
 import Principal "mo:core/Principal";
 import Runtime "mo:core/Runtime";
+import Time "mo:core/Time";
+import Migration "migration";
+
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
 
+// Specify data migration via with-clause
+(with migration = Migration.run)
 actor {
   let accessControlState = AccessControl.initState();
   include MixinAuthorization(accessControlState);
 
+  public type MobileNumber = Text;
+
   public type CandidateProfile = {
     fullName : Text;
+    mobileNumber : MobileNumber;
+    email : Text;
+    currentOrLastCompany : Text;
+    jobRole : Text;
+    totalExperience : Nat;
+    lastDrawnSalary : Nat;
+    preferredLocation : Text;
+    isActive : Bool;
     skills : [Text];
     resume : Text;
   };
 
   public type EmployerProfile = {
     companyName : Text;
+    contactPersonName : Text;
+    mobileNumber : MobileNumber;
+    email : Text;
+    businessLocation : Text;
     companyWebsite : Text;
     companyLogo : Text;
     description : Text;
   };
 
   public type UserProfile = {
-    role : AccessControl.UserRole;
     bio : Text;
     linkedin : Text;
     github : Text;
@@ -35,13 +55,29 @@ actor {
     employer : ?EmployerProfile;
   };
 
-  module UserProfile {
-    public func compare(profile1 : UserProfile, profile2 : UserProfile) : Order.Order {
-      switch (Text.compare(profile1.bio, profile2.bio)) {
-        case (#equal) { Text.compare(profile1.linkedin, profile2.linkedin) };
-        case (order) { order };
-      };
-    };
+  public type Employer = {
+    principal : Principal;
+    credits : Nat;
+    creditsPurchased : Nat;
+  };
+
+  public type CandidateCreditUsage = {
+    creditsUsed : Nat;
+    unlockLogs : [UnlockRecord];
+  };
+
+  public type UnlockRecord = {
+    employer : Principal;
+    candidate : Principal;
+    timestamp : Int;
+    creditsUsed : Nat;
+    profileDetails : CandidateProfile;
+  };
+
+  public type UnlockResult = {
+    currentCredits : Nat;
+    status : Text;
+    remainingCredits : Nat;
   };
 
   public type Job = {
@@ -55,13 +91,13 @@ actor {
     employer : Principal;
   };
 
-  module Job {
-    public func compare(job1 : Job, job2 : Job) : Order.Order {
-      switch (Text.compare(job1.title, job2.title)) {
-        case (#equal) { Text.compare(job1.company, job2.company) };
-        case (order) { order };
-      };
-    };
+  public type ApplicationStatus = {
+    #applied;
+    #interview;
+    #offer;
+    #rejected;
+    #withdrawn;
+    #hired;
   };
 
   public type JobApplication = {
@@ -72,212 +108,371 @@ actor {
     status : ApplicationStatus;
   };
 
-  public type ApplicationStatus = {
-    #applied;
-    #interview;
-    #offer;
-    #rejected;
-    #withdrawn;
-    #hired;
-  };
-
   public type ApplicationInput = {
     jobId : Nat;
     coverLetter : Text;
   };
 
+  module UserProfile {
+    public func compare(profile1 : UserProfile, profile2 : UserProfile) : Order.Order {
+      switch (Text.compare(profile1.bio, profile2.bio)) {
+        case (#equal) { Text.compare(profile1.linkedin, profile2.linkedin) };
+        case (order) { order };
+      };
+    };
+  };
+
+  module Job {
+    public func compare(job1 : Job, job2 : Job) : Order.Order {
+      switch (Text.compare(job1.title, job2.title)) {
+        case (#equal) { Text.compare(job1.company, job2.company) };
+        case (order) { order };
+      };
+    };
+  };
+
   let jobs = Map.empty<Nat, Job>();
   let applications = Map.empty<Nat, JobApplication>();
   let userProfiles = Map.empty<Principal, UserProfile>();
+  let employerCredits = Map.empty<Principal, Employer>();
+  let candidateCreditUsage = Map.empty<Principal, CandidateCreditUsage>();
+  let employerUnlockedProfiles = Map.empty<Principal, Set.Set<Principal>>();
+  let allUnlockLogs = Map.empty<Principal, [UnlockRecord]>();
+  let unlockLogs = Map.empty<Principal, [UnlockRecord]>();
+  let deductLogs = Map.empty<Principal, [Int]>();
+  let creditPurchaseLogs = Map.empty<Principal, [Int]>();
 
   var nextJobId = 1;
   var nextApplicationId = 1;
+  var jobUnlockCreditCost = 10;
 
-  public shared ({ caller }) func chooseRole(role : AccessControl.UserRole) : async () {
-    AccessControl.initialize(accessControlState, caller, "0", "0");
-    let profile : UserProfile = {
-      role;
-      bio = "";
-      linkedin = "";
-      github = "";
-      candidate = null;
-      employer = null;
+  // Helper function to check if caller is an employer
+  private func isEmployer(caller : Principal) : Bool {
+    switch (userProfiles.get(caller)) {
+      case (null) { false };
+      case (?profile) {
+        switch (profile.employer) {
+          case (null) { false };
+          case (?_) { true };
+        };
+      };
     };
-    userProfiles.add(caller, profile);
   };
 
+  // Helper function to check if caller is a jobseeker
+  private func isJobseeker(caller : Principal) : Bool {
+    switch (userProfiles.get(caller)) {
+      case (null) { false };
+      case (?profile) {
+        switch (profile.candidate) {
+          case (null) { false };
+          case (?_) { true };
+        };
+      };
+    };
+  };
+
+  // Admin-only: Set credit cost per unlock
+  public shared ({ caller }) func setCreditCostPerUnlock(cost : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can set credit cost");
+    };
+    jobUnlockCreditCost := cost;
+  };
+
+  // Any authenticated user can view the credit cost
+  public query ({ caller }) func getCreditCostPerUnlock() : async Nat {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Authentication required");
+    };
+    jobUnlockCreditCost;
+  };
+
+  // Admin-only: Add credits to an employer
+  public shared ({ caller }) func addCredits(employerPrincipal : Principal, credits : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can add credits");
+    };
+
+    // Verify target is an employer
+    if (not isEmployer(employerPrincipal)) {
+      Runtime.trap("Target principal is not an employer");
+    };
+
+    let newCredits = switch (employerCredits.get(employerPrincipal)) {
+      case (null) { credits };
+      case (?employer) { employer.credits + credits };
+    };
+
+    let creditsPurchased = switch (employerCredits.get(employerPrincipal)) {
+      case (null) { credits };
+      case (?employer) { employer.creditsPurchased + credits };
+    };
+
+    let employer = {
+      principal = employerPrincipal;
+      credits = newCredits;
+      creditsPurchased;
+    };
+
+    employerCredits.add(employerPrincipal, employer);
+
+    let currentLogs = switch (creditPurchaseLogs.get(employerPrincipal)) {
+      case (null) { [] };
+      case (?logs) { logs };
+    };
+    creditPurchaseLogs.add(employerPrincipal, currentLogs.concat([Time.now()]));
+  };
+
+  // Admin-only: Deduct credits from an employer
+  public shared ({ caller }) func deductCredits(employerPrincipal : Principal, credits : Nat) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can deduct credits");
+    };
+
+    // Verify target is an employer
+    if (not isEmployer(employerPrincipal)) {
+      Runtime.trap("Target principal is not an employer");
+    };
+
+    switch (employerCredits.get(employerPrincipal)) {
+      case (null) { Runtime.trap("Employer record not found") };
+      case (?employer) {
+        if (employer.credits < credits) {
+          Runtime.trap("Failed: Cannot deduct more credits than balance");
+        };
+        let newCredits = employer.credits - credits;
+        employerCredits.add(employerPrincipal, { employer with credits = newCredits });
+
+        let currentLogs = switch (deductLogs.get(employerPrincipal)) {
+          case (null) { [] };
+          case (?logs) { logs };
+        };
+        deductLogs.add(employerPrincipal, currentLogs.concat([Time.now()]));
+      };
+    };
+  };
+
+  // Employer-only: Unlock a candidate profile
+  public shared ({ caller }) func unlockCandidateProfile(candidatePrincipal : Principal) : async UnlockResult {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Authentication required");
+    };
+
+    // Verify caller is an employer
+    if (not isEmployer(caller)) {
+      Runtime.trap("Unauthorized: Only employers can unlock candidate profiles");
+    };
+
+    // Verify target is a jobseeker
+    if (not isJobseeker(candidatePrincipal)) {
+      Runtime.trap("Target principal is not a jobseeker");
+    };
+
+    switch (employerCredits.get(caller)) {
+      case (null) { Runtime.trap("Employer record not found") };
+      case (?employer) {
+        if (employer.credits < jobUnlockCreditCost) {
+          Runtime.trap("Failed: Insufficient credits to unlock this profile");
+        };
+
+        let employerSet = switch (employerUnlockedProfiles.get(caller)) {
+          case (null) { Set.empty<Principal>() };
+          case (?set) { set };
+        };
+
+        if (employerSet.contains(candidatePrincipal)) {
+          return {
+            currentCredits = employer.credits;
+            status = "Already unlocked this profile";
+            remainingCredits = employer.credits;
+          };
+        };
+
+        let candidateRecord = switch (userProfiles.get(candidatePrincipal)) {
+          case (null) { Runtime.trap("Candidate profile not found") };
+          case (?profile) {
+            switch (profile.candidate) {
+              case (null) { Runtime.trap("Jobseeker details not available") };
+              case (?candidate) { candidate };
+            };
+          };
+        };
+
+        // Deduct credits
+        let newCredits = employer.credits - jobUnlockCreditCost;
+        employerCredits.add(caller, { employer with credits = newCredits });
+
+        let unlockLog : UnlockRecord = {
+          employer = caller;
+          candidate = candidatePrincipal;
+          timestamp = Time.now();
+          creditsUsed = jobUnlockCreditCost;
+          profileDetails = candidateRecord;
+        };
+
+        // Update candidate's unlock logs
+        let candidateUsage = switch (candidateCreditUsage.get(candidatePrincipal)) {
+          case (null) {
+            { creditsUsed = jobUnlockCreditCost; unlockLogs = [unlockLog] };
+          };
+          case (?usage) {
+            {
+              creditsUsed = usage.creditsUsed + jobUnlockCreditCost;
+              unlockLogs = usage.unlockLogs.concat([unlockLog]);
+            };
+          };
+        };
+        candidateCreditUsage.add(candidatePrincipal, candidateUsage);
+
+        // Update employer's unlocked profiles
+        employerSet.add(candidatePrincipal);
+        employerUnlockedProfiles.add(caller, employerSet);
+
+        let allUnlocks = switch (allUnlockLogs.get(candidatePrincipal)) {
+          case (null) { [unlockLog] };
+          case (?logs) { logs.concat([unlockLog]) };
+        };
+        allUnlockLogs.add(candidatePrincipal, allUnlocks);
+
+        {
+          currentCredits = newCredits;
+          status = "Unlocked successfully";
+          remainingCredits = newCredits;
+        };
+      };
+    };
+  };
+
+  // Employer-only: Get candidate directory
+  public query ({ caller }) func getCandidateDirectory() : async [UserProfile] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Authentication required");
+    };
+
+    // Verify caller is an employer
+    if (not isEmployer(caller)) {
+      Runtime.trap("Unauthorized: Only employers can browse candidate directory");
+    };
+
+    let candidates = userProfiles.values().filter(func(profile : UserProfile) : Bool {
+      profile.candidate != null;
+    }).toArray();
+
+    candidates;
+  };
+
+  let defaultTimeout : Int = 5_184_000_000_000;
+
+  // Admin-only: Set session timeout
+  public shared ({ caller }) func setSessionTimeout(timeout : Int) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can set session timeout");
+    };
+  };
+
+  // Authenticated users can view session timeout
+  public query ({ caller }) func getSessionTimeout() : async Int {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Authentication required");
+    };
+    defaultTimeout;
+  };
+
+  var sessionTokens = Map.empty<Text, (Principal, Int)>();
+
+  // Get caller's own profile (required by frontend)
   public query ({ caller }) func getCallerUserProfile() : async ?UserProfile {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view profiles");
+      Runtime.trap("Unauthorized: Only authenticated users can access profiles");
     };
     userProfiles.get(caller);
   };
 
-  public query ({ caller }) func getUserProfile(p : Principal) : async UserProfile {
+  // Save caller's own profile (required by frontend)
+  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Only authenticated users can save profiles");
+    };
+    userProfiles.add(caller, profile);
+  };
+
+  // Get any user's profile (admin can view any, users can view their own)
+  public query ({ caller }) func getUserProfile(p : Principal) : async ?UserProfile {
+    if (caller != p and not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Can only view your own profile");
+    };
+    userProfiles.get(p);
+  };
+
+  // Legacy method for compatibility
+  public query ({ caller }) func getCurrentUserProfile() : async ?UserProfile {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
+      Runtime.trap("Unauthorized: Authentication required");
+    };
+    userProfiles.get(caller);
+  };
+
+  // Legacy method for compatibility
+  public query ({ caller }) func getProfile(p : Principal) : async UserProfile {
     if (caller != p and not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Can only view your own profile");
     };
     switch (userProfiles.get(p)) {
-      case (null) { Runtime.trap("User does not exist") };
+      case (null) { Runtime.trap("Profile not found") };
       case (?profile) { profile };
     };
   };
 
-  public shared ({ caller }) func saveCallerUserProfile(profile : UserProfile) : async () {
+  // Employer can check their own credit balance
+  public query ({ caller }) func getCreditBalance() : async Nat {
     if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can save profiles");
+      Runtime.trap("Unauthorized: Authentication required");
     };
-    userProfiles.add(caller, profile);
+
+    // Verify caller is an employer
+    if (not isEmployer(caller)) {
+      Runtime.trap("Unauthorized: Only employers have credit balances");
+    };
+
+    switch (employerCredits.get(caller)) {
+      case (null) { 0 };
+      case (?employer) { employer.credits };
+    };
   };
 
-  public shared ({ caller }) func updateUserProfile(profile : UserProfile) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can update profiles");
-    };
-    userProfiles.add(caller, profile);
-  };
-
-  public query ({ caller }) func getAllUserProfiles() : async [UserProfile] {
+  // Admin-only: Get all unlock logs for audit
+  public query ({ caller }) func getAllUnlockLogs() : async [(Principal, [UnlockRecord])] {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view all profiles");
+      Runtime.trap("Unauthorized: Only admins can view unlock logs");
     };
-    userProfiles.values().toArray().sort();
+    allUnlockLogs.entries().toArray();
   };
 
-  public shared ({ caller }) func createJob(job : Job) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can create jobs");
-    };
-    switch (userProfiles.get(caller)) {
-      case (null) { Runtime.trap("User profile not found") };
-      case (?profile) {
-        switch (profile.employer) {
-          case (null) { Runtime.trap("Unauthorized: Only employers can create jobs") };
-          case (?_) {
-            let newJob : Job = {
-              job with id = nextJobId;
-              employer = caller;
-            };
-            jobs.add(nextJobId, newJob);
-            nextJobId += 1;
-          };
-        };
-      };
-    };
-  };
-
-  public query ({ caller }) func getJobs() : async [Job] {
-    jobs.values().toArray().sort();
-  };
-
-  public query ({ caller }) func getJobsByEmployer(employer : Principal) : async [Job] {
-    jobs.values().filter(func(job) { job.employer == employer }).toArray().sort();
-  };
-
-  public query ({ caller }) func getJob(id : Nat) : async Job {
-    switch (jobs.get(id)) {
-      case (null) { Runtime.trap("Job does not exist") };
-      case (?job) { job };
-    };
-  };
-
-  public shared ({ caller }) func deleteJob(id : Nat) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can delete jobs");
-    };
-    switch (jobs.get(id)) {
-      case (null) { Runtime.trap("Job does not exist") };
-      case (?job) {
-        if (job.employer != caller and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: Only the employer can delete this job");
-        };
-        jobs.remove(id);
-      };
-    };
-  };
-
-  public shared ({ caller }) func applyForJob(application : ApplicationInput) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can apply for jobs");
-    };
-    switch (userProfiles.get(caller)) {
-      case (null) { Runtime.trap("User profile not found") };
-      case (?profile) {
-        switch (profile.candidate) {
-          case (null) { Runtime.trap("Unauthorized: Only candidates can apply for jobs") };
-          case (?_) {
-            switch (jobs.get(application.jobId)) {
-              case (null) { Runtime.trap("Job does not exist") };
-              case (?_) {
-                let newApplication : JobApplication = {
-                  id = nextApplicationId;
-                  jobId = application.jobId;
-                  candidate = caller;
-                  coverLetter = application.coverLetter;
-                  status = #applied;
-                };
-                applications.add(nextApplicationId, newApplication);
-                nextApplicationId += 1;
-              };
-            };
-          };
-        };
-      };
-    };
-  };
-
-  public query ({ caller }) func getApplications() : async [JobApplication] {
+  // Admin-only: Get employer credit details
+  public query ({ caller }) func getEmployerCredits(employerPrincipal : Principal) : async ?Employer {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
-      Runtime.trap("Unauthorized: Only admins can view all applications");
+      Runtime.trap("Unauthorized: Only admins can view employer credits");
     };
-    applications.values().toArray();
+    employerCredits.get(employerPrincipal);
   };
 
-  public query ({ caller }) func getApplicationsForJob(jobId : Nat) : async [JobApplication] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view applications");
+  // Admin-only: Get all employers
+  public query ({ caller }) func getAllEmployers() : async [Employer] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view all employers");
     };
-    switch (jobs.get(jobId)) {
-      case (null) { Runtime.trap("Job does not exist") };
-      case (?job) {
-        if (job.employer != caller and not AccessControl.isAdmin(accessControlState, caller)) {
-          Runtime.trap("Unauthorized: Only the employer can view applications for this job");
-        };
-        applications.values().filter(func(app) { app.jobId == jobId }).toArray();
-      };
-    };
+    employerCredits.values().toArray();
   };
 
-  public query ({ caller }) func getApplicationsForCandidate(candidate : Principal) : async [JobApplication] {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can view applications");
+  // Admin-only: Get all jobseekers
+  public query ({ caller }) func getAllJobseekers() : async [Principal] {
+    if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
+      Runtime.trap("Unauthorized: Only admins can view all jobseekers");
     };
-    if (caller != candidate and not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Can only view your own applications");
-    };
-    applications.values().filter(func(app) { app.candidate == candidate }).toArray();
-  };
-
-  public shared ({ caller }) func updateApplicationStatus(id : Nat, status : ApplicationStatus) : async () {
-    if (not (AccessControl.hasPermission(accessControlState, caller, #user))) {
-      Runtime.trap("Unauthorized: Only users can update application status");
-    };
-    switch (applications.get(id)) {
-      case (null) { Runtime.trap("Application does not exist") };
-      case (?application) {
-        switch (jobs.get(application.jobId)) {
-          case (null) { Runtime.trap("Associated job does not exist") };
-          case (?job) {
-            if (job.employer != caller and not AccessControl.isAdmin(accessControlState, caller)) {
-              Runtime.trap("Unauthorized: Only the employer can update this application");
-            };
-            let updatedApplication : JobApplication = {
-              application with status
-            };
-            applications.add(id, updatedApplication);
-          };
-        };
-      };
-    };
+    let jobseekers = userProfiles.entries().filter(func((p, profile) : (Principal, UserProfile)) : Bool {
+      profile.candidate != null;
+    }).map(func((p, _) : (Principal, UserProfile)) : Principal { p }).toArray();
+    jobseekers;
   };
 };
