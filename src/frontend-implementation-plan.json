@@ -1,0 +1,94 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Restore frontend resilience and diagnostics for missing canister methods",
+  "requirements": [
+    {
+      "id": "REQ-11",
+      "summary": "Reproduce missing-method failures in the running app and add lightweight frontend diagnostics to capture exact missing method names and call sites.",
+      "acceptanceCriteria": [
+        "A clear list of missing/broken functions is produced, including the exact method names and where they are called in the frontend.",
+        "The reproduction steps are documented (which page/role/action triggers the missing function error)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/actorDiagnostics.ts",
+          "operation": "create",
+          "description": "Add a small diagnostics helper that (1) checks an actor for required method names and (2) logs a single, readable report to the console including missing method names and their frontend call sites (e.g., hook/mutation name)."
+        },
+        {
+          "path": "frontend/src/hooks/useActor.ts",
+          "operation": "modify",
+          "description": "After actor creation, run the actor diagnostics check against the set of methods used by frontend/src/hooks/useQueries.ts and emit a console report when methods are missing (without breaking navigation)."
+        },
+        {
+          "path": "frontend/docs/missing-canister-functions.md",
+          "operation": "create",
+          "description": "Document the reproduction steps discovered during investigation (page/role/action) and paste the exact console/runtime errors captured (e.g., \"actor.<method> is not a function\" / method-not-found). Keep this updated as issues are confirmed/fixed."
+        }
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "summary": "Ensure the frontend actor API expectations match the generated bindings and guard all actor calls used in useQueries.ts so missing methods are detected deterministically.",
+      "acceptanceCriteria": [
+        "In the deployed app, no page action triggers \"is not a function\" / \"method not found\" errors for any actor call in frontend/src/hooks/useQueries.ts.",
+        "Type checking/build succeeds with the generated backend bindings used by the frontend (no missing method typings).",
+        "Candidate flow works end-to-end: browse jobs → view job → apply → see application on Candidate dashboard.",
+        "Employer flow works end-to-end: create job → see it in Employer dashboard → open applicants page → update an application status."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/actorGuards.ts",
+          "operation": "create",
+          "description": "Create utilities to safely access required actor methods (e.g., assert/guard that chooseRole, getCallerUserProfile, saveCallerUserProfile, getJobs, getJob, getJobsByEmployer, createJob, deleteJob, applyForJob, getApplicationsForCandidate, getApplicationsForJob, updateApplicationStatus exist and are callable) and throw a consistent, typed error when unavailable."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Update all queries/mutations to use the new actor guard utilities before invoking actor methods, so missing methods are caught early with consistent errors and do not surface as raw \"is not a function\" failures. Ensure the guarded set includes all methods listed in REQ-12 and that query keys/invalidations remain unchanged."
+        },
+        {
+          "path": "frontend/src/utils/actorDiagnostics.ts",
+          "operation": "modify",
+          "description": "Extend diagnostics metadata to include the full required-method list from useQueries.ts (including chooseRole, getCallerUserProfile, saveCallerUserProfile, getJobs, getJob, getJobsByEmployer, createJob, deleteJob, applyForJob, getApplicationsForCandidate, getApplicationsForJob, updateApplicationStatus) and map each to its hook/mutation for the report."
+        }
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "summary": "Add user-facing error handling for missing/unsupported actor methods so key actions show clear English messages and the UI stays usable.",
+      "acceptanceCriteria": [
+        "When an actor call fails, the user sees an English error message explaining the action failed and prompting them to retry later.",
+        "The UI remains usable after the error (no broken state requiring a full reload to continue navigating)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/actorErrorMessages.ts",
+          "operation": "create",
+          "description": "Add a small error-normalization helper that detects missing/unsupported backend method failures (e.g., contains \"is not a function\", candid method-not-found variants) and returns a clear English message suitable for user display."
+        },
+        {
+          "path": "frontend/src/components/applications/CandidateApplyForm.tsx",
+          "operation": "modify",
+          "description": "Use the error-normalization helper when apply submission fails so the toast message clearly indicates the action is unavailable/failed and prompts retry later; ensure the form remains open and editable after errors."
+        },
+        {
+          "path": "frontend/src/components/jobs/EmployerJobForm.tsx",
+          "operation": "modify",
+          "description": "Use the error-normalization helper when job creation fails so the toast message clearly indicates the action is unavailable/failed and prompts retry later; ensure the form remains open and inputs preserved after errors."
+        },
+        {
+          "path": "frontend/src/pages/EmployerJobApplicationsPage.tsx",
+          "operation": "modify",
+          "description": "Use the error-normalization helper when application status updates fail so the toast message clearly indicates the action is unavailable/failed and prompts retry later; ensure the page remains usable and the select can be re-used after errors."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "When guarded actor methods are unavailable, throw/propagate the consistent missing-method error type so UI layers can display normalized English messages rather than failing silently."
+        }
+      ]
+    }
+  ]
+}

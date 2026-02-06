@@ -1,0 +1,69 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-identify-which-backend-canister-functions-are-reported-as-missing-after-the-latest-deployment-by-reproducing-the-issue-in-the-running-app-and-capturing-the-exact-console-runtime-errors-e-g-actor-method-is-not-a-function-or-candid-method-not-found",
+      "featureTitle": "Identify which backend canister functions are reported as “missing” after the latest deployment by reproducing the issue in the running app and capturing the exact console/runtime errors (e.g., \"actor.<method> is not a function\" or Candid method-not-found).",
+      "files": [
+        "frontend/docs/missing-canister-functions.md",
+        "frontend/src/utils/actorDiagnostics.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-11"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-restore-full-parity-between-the-frontend-s-expected-actor-api-and-the-backend-canister-s-exported-candid-interface-by-ensuring-all-functions-used-in-frontend-src-hooks-usequeries-ts-exist-and-are-callable-on-the-deployed-canister-including-chooserole-getcalleruserprofile-savecalleruserprofile-getjobs-getjob-getjobsbyemployer-createjob-deletejob-applyforjob-getapplicationsforcandidate-getapplicationsforjob-updateapplicationstatus",
+      "featureTitle": "Restore full parity between the frontend’s expected actor API and the backend canister’s exported Candid interface by ensuring all functions used in frontend/src/hooks/useQueries.ts exist and are callable on the deployed canister (including chooseRole, getCallerUserProfile, saveCallerUserProfile, getJobs, getJob, getJobsByEmployer, createJob, deleteJob, applyForJob, getApplicationsForCandidate, getApplicationsForJob, updateApplicationStatus).",
+      "files": [
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/utils/actorDiagnostics.ts",
+        "frontend/src/utils/actorGuards.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-12"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-user-facing-error-handling-for-actor-call-failures-related-to-missing-unsupported-methods-so-the-ui-shows-a-clear-english-message-and-does-not-silently-fail-when-a-backend-method-is-unavailable-including-on-job-detail-apply-employer-job-creation-and-application-status-update-actions",
+      "featureTitle": "Add user-facing error handling for actor call failures related to missing/unsupported methods so the UI shows a clear English message (and does not silently fail) when a backend method is unavailable, including on Job detail apply, Employer job creation, and application status update actions.",
+      "files": [
+        "frontend/src/components/applications/CandidateApplyForm.tsx",
+        "frontend/src/components/jobs/EmployerJobForm.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/pages/EmployerJobApplicationsPage.tsx",
+        "frontend/src/utils/actorErrorMessages.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-13"
+      ],
+      "confidence": "high"
+    }
+  ]
+}

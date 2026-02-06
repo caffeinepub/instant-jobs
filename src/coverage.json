@@ -1,0 +1,81 @@
+{
+  "kind": "coverage_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-06T10:03:19.690Z",
+  "sources": {
+    "buildRequest": true,
+    "implementationPlan": true
+  },
+  "requirements": {
+    "total": 3,
+    "implemented": 3,
+    "items": [
+      {
+        "id": "REQ-11",
+        "summary": "Identify which backend canister functions are reported as “missing” after the latest deployment by reproducing the issue in the running app and capturing the exact console/runtime errors (e.g., \"actor.<method> is not a function\" or Candid method-not-found).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/actorDiagnostics.ts",
+          "frontend/src/hooks/useActor.ts",
+          "frontend/docs/missing-canister-functions.md"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/actorDiagnostics.ts",
+          "frontend/docs/missing-canister-functions.md"
+        ]
+      },
+      {
+        "id": "REQ-12",
+        "summary": "Restore full parity between the frontend’s expected actor API and the backend canister’s exported Candid interface by ensuring all functions used in frontend/src/hooks/useQueries.ts exist and are callable on the deployed canister (including chooseRole, getCallerUserProfile, saveCallerUserProfile, getJobs, getJob, getJobsByEmployer, createJob, deleteJob, applyForJob, getApplicationsForCandidate, getApplicationsForJob, updateApplicationStatus).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/actorGuards.ts",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/utils/actorDiagnostics.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/actorGuards.ts",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/utils/actorDiagnostics.ts"
+        ]
+      },
+      {
+        "id": "REQ-13",
+        "summary": "Add user-facing error handling for actor call failures related to missing/unsupported methods so the UI shows a clear English message (and does not silently fail) when a backend method is unavailable, including on Job detail apply, Employer job creation, and application status update actions.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/utils/actorErrorMessages.ts",
+          "frontend/src/components/applications/CandidateApplyForm.tsx",
+          "frontend/src/components/jobs/EmployerJobForm.tsx",
+          "frontend/src/pages/EmployerJobApplicationsPage.tsx",
+          "frontend/src/hooks/useQueries.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/utils/actorErrorMessages.ts",
+          "frontend/src/components/applications/CandidateApplyForm.tsx",
+          "frontend/src/components/jobs/EmployerJobForm.tsx",
+          "frontend/src/pages/EmployerJobApplicationsPage.tsx",
+          "frontend/src/hooks/useQueries.ts"
+        ]
+      }
+    ]
+  },
+  "changedFiles": [
+    "build-request.json",
+    "feature_evidence.json",
+    "frontend-file-summaries.txt",
+    "frontend-implementation-plan.json",
+    "frontend/docs/missing-canister-functions.md",
+    "frontend/src/components/applications/CandidateApplyForm.tsx",
+    "frontend/src/components/jobs/EmployerJobForm.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/EmployerJobApplicationsPage.tsx",
+    "frontend/src/utils/actorDiagnostics.ts",
+    "frontend/src/utils/actorErrorMessages.ts",
+    "frontend/src/utils/actorGuards.ts",
+    "project_state.json",
+    "scratch/component-selection.json",
+    "spec.md",
+    "spec_vs_diff_report.json"
+  ]
+}

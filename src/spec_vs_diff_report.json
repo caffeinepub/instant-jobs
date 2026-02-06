@@ -1,0 +1,39 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-06T10:03:19.687Z",
+  "summary": "Frontend-side diagnostics, guarded actor calls, and user-facing error normalization were added. However, the diff shows no backend Motoko changes, so restoring missing canister functions / Candid parity is not evidenced. The REQ-11 “reproduce and capture exact runtime errors” outcome is also not evidenced; the added doc describes a diagnostics approach and generic patterns but does not capture actual observed console errors from the deployed app.",
+  "missing_requirements": [
+    {
+      "id": "REQ-11",
+      "requirement": "Identify which backend canister functions are reported as “missing” after the latest deployment by reproducing the issue in the running app and capturing the exact console/runtime errors, producing a clear list of missing/broken functions and reproduction steps.",
+      "reason": "The diff adds a diagnostics utility and a documentation file with generic guidance and a table marked as all methods present, but it does not include captured real console/runtime error strings from an actual reproduction, nor a confirmed list of actually-missing functions from the latest deployment.",
+      "evidence": [
+        "frontend/docs/missing-canister-functions.md",
+        "frontend/src/utils/actorDiagnostics.ts"
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "requirement": "Restore full parity between the frontend’s expected actor API and the backend canister’s exported Candid interface by ensuring all functions used in frontend/src/hooks/useQueries.ts exist and are callable on the deployed canister (chooseRole, getCallerUserProfile, saveCallerUserProfile, getJobs, getJob, getJobsByEmployer, createJob, deleteJob, applyForJob, getApplicationsForCandidate, getApplicationsForJob, updateApplicationStatus).",
+      "reason": "No backend canister changes are shown in the diff summary (no edits to backend/main.mo or any backend files). The frontend adds guards to detect missing methods, but that does not restore the backend API or Candid interface parity.",
+      "evidence": [
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    }
+  ],
+  "hallucinated_features": [],
+  "confidence": 0.74,
+  "changed_files": [
+    "frontend-file-summaries.txt",
+    "frontend/docs/missing-canister-functions.md",
+    "frontend/src/components/applications/CandidateApplyForm.tsx",
+    "frontend/src/components/jobs/EmployerJobForm.tsx",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/pages/EmployerJobApplicationsPage.tsx",
+    "frontend/src/utils/actorDiagnostics.ts",
+    "frontend/src/utils/actorErrorMessages.ts",
+    "frontend/src/utils/actorGuards.ts",
+    "project_state.json"
+  ]
+}

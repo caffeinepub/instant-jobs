@@ -1,0 +1,74 @@
+{
+  "kind": "build_request",
+  "title": "Investigate and restore missing canister functions used by the frontend",
+  "priority": "high",
+  "requirements": [
+    {
+      "id": "REQ-11",
+      "text": "Identify which backend canister functions are reported as “missing” after the latest deployment by reproducing the issue in the running app and capturing the exact console/runtime errors (e.g., \"actor.<method> is not a function\" or Candid method-not-found).",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Some functions are missing, Fix it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A clear list of missing/broken functions is produced, including the exact method names and where they are called in the frontend.",
+        "The reproduction steps are documented (which page/role/action triggers the missing function error)."
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "text": "Restore full parity between the frontend’s expected actor API and the backend canister’s exported Candid interface by ensuring all functions used in frontend/src/hooks/useQueries.ts exist and are callable on the deployed canister (including chooseRole, getCallerUserProfile, saveCallerUserProfile, getJobs, getJob, getJobsByEmployer, createJob, deleteJob, applyForJob, getApplicationsForCandidate, getApplicationsForJob, updateApplicationStatus).",
+      "target": "both",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Some functions are missing, Fix it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "In the deployed app, no page action triggers \"is not a function\" / \"method not found\" errors for any actor call in frontend/src/hooks/useQueries.ts.",
+        "Type checking/build succeeds with the generated backend bindings used by the frontend (no missing method typings).",
+        "Candidate flow works end-to-end: browse jobs → view job → apply → see application on Candidate dashboard.",
+        "Employer flow works end-to-end: create job → see it in Employer dashboard → open applicants page → update an application status."
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "text": "Add user-facing error handling for actor call failures related to missing/unsupported methods so the UI shows a clear English message (and does not silently fail) when a backend method is unavailable, including on Job detail apply, Employer job creation, and application status update actions.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-3"
+        ],
+        "quotes": [
+          "Some functions are missing, Fix it"
+        ]
+      },
+      "acceptanceCriteria": [
+        "When an actor call fails, the user sees an English error message explaining the action failed and prompting them to retry later.",
+        "The UI remains usable after the error (no broken state requiring a full reload to continue navigating)."
+      ]
+    }
+  ],
+  "constraints": [
+    "Backend must remain a single Motoko actor in backend/main.mo; only add backend/migration.mo if an existing stable state upgrade requires it.",
+    "Do not edit files under frontend/src/components/ui or any other frontend immutablePaths from SYSTEM_CONTEXT.",
+    "Use English for any user-facing text."
+  ],
+  "nonGoals": [
+    "Adding new product features beyond restoring missing/broken functions.",
+    "Implementing Google OAuth or any third-party authentication beyond Internet Identity.",
+    "Introducing external databases or additional backend services."
+  ],
+  "imageRequirements": {
+    "required": [],
+    "edits": []
+  }
+}

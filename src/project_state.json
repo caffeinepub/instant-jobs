@@ -1,0 +1,139 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 7,
+  "summary": "Plan to clone the Wrokindia.in website/app (initially also requested renaming branding from Workindia to Instant Jobs).",
+  "architectural_notes": [],
+  "known_issues": [
+    "User reports that some functions are missing after deployment; needs investigation and restoration of expected functionality."
+  ],
+  "isFixRequest": true,
+  "existing_features": [
+    {
+      "id": "feature-implement-internet-identity-authentication-and-an-app-level-user-model-that-supports-two-roles-candidate-and-employer-provide-a-role-selection-confirmation-step-on-first-sign-in-and-persist-the-chosen-role-for-subsequent-sessions",
+      "title": "Implement Internet Identity authentication and an app-level user model that supports two roles: Candidate and Employer. Provide a role selection/confirmation step on first sign-in and persist the chosen role for subsequent sessions.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-public-unauthenticated-pages-that-mirror-a-job-marketplace-like-wrokindia-in-branded-as-instant-jobs-a-landing-home-page-a-job-search-browse-page-and-a-job-detail-page-the-landing-page-should-clearly-present-the-two-user-journeys-find-jobs-hire-candidates-and-route-users-appropriately",
+      "title": "Build public (unauthenticated) pages that mirror a job marketplace like Wrokindia.in, branded as “Instant Jobs”: a landing/home page, a job search/browse page, and a job detail page. The landing page should clearly present the two user journeys (Find Jobs / Hire Candidates) and route users appropriately.",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-candidate-features-and-ui-candidate-dashboard-showing-applied-jobs-ability-to-apply-to-a-job-via-an-application-form-and-view-application-status-history-current-status",
+      "title": "Build Candidate features and UI: Candidate dashboard showing applied jobs, ability to apply to a job via an application form, and view application status history/current status.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-employer-features-and-ui-employer-dashboard-with-job-posting-form-manage-posted-jobs-view-applicants-per-job-and-update-applicant-application-status",
+      "title": "Build Employer features and UI: Employer dashboard with job posting form, manage posted jobs, view applicants per job, and update applicant/application status.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-instant-jobs-branding-across-the-entire-product-name-logo-headings-metadata-do-not-use-workindia-in-any-user-visible-content",
+      "title": "Apply “Instant Jobs” branding across the entire product (name, logo, headings, metadata). Do not use “Workindia” in any user-visible content.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-establish-a-coherent-visual-theme-for-the-clone-colors-typography-spacing-components-suitable-for-a-modern-job-marketplace-and-apply-it-consistently-across-pages-using-tailwind-the-existing-ui-component-library",
+      "title": "Establish a coherent visual theme for the clone (colors, typography, spacing, components) suitable for a modern job marketplace, and apply it consistently across pages using Tailwind + the existing UI component library.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-generated-static-image-assets-to-the-frontend-and-render-them-in-the-ui-store-under-frontend-public-assets-generated-use-these-assets-for-the-product-logo-and-landing-page-hero-illustration",
+      "title": "Add generated static image assets to the frontend and render them in the UI (store under frontend/public/assets/generated). Use these assets for the product logo and landing page hero illustration.",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-user-facing-authentication-ux-that-clearly-communicates-the-app-uses-internet-identity-for-login-signup-not-google-oauth-and-update-login-related-ui-copy-accordingly",
+      "title": "Add a user-facing authentication UX that clearly communicates the app uses Internet Identity for login/signup (not Google OAuth), and update login-related UI copy accordingly.",
+      "reqIds": [
+        "REQ-9"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-a-dedicated-easy-to-find-help-section-e-g-on-the-landing-page-or-a-small-modal-linked-near-the-login-button-explaining-what-internet-identity-is-and-how-to-use-it-to-create-an-account-and-sign-in",
+      "title": "Add a dedicated, easy-to-find help section (e.g., on the landing page or a small modal linked near the Login button) explaining what Internet Identity is and how to use it to create an account and sign in.",
+      "reqIds": [
+        "REQ-10"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-identify-which-backend-canister-functions-are-reported-as-missing-after-the-latest-deployment-by-reproducing-the-issue-in-the-running-app-and-capturing-the-exact-console-runtime-errors-e-g-actor-method-is-not-a-function-or-candid-method-not-found",
+      "title": "Identify which backend canister functions are reported as “missing” after the latest deployment by reproducing the issue in the running app and capturing the exact console/runtime errors (e.g., \"actor.<method> is not a function\" or Candid method-not-found).",
+      "reqIds": [
+        "REQ-11"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-restore-full-parity-between-the-frontend-s-expected-actor-api-and-the-backend-canister-s-exported-candid-interface-by-ensuring-all-functions-used-in-frontend-src-hooks-usequeries-ts-exist-and-are-callable-on-the-deployed-canister-including-chooserole-getcalleruserprofile-savecalleruserprofile-getjobs-getjob-getjobsbyemployer-createjob-deletejob-applyforjob-getapplicationsforcandidate-getapplicationsforjob-updateapplicationstatus",
+      "title": "Restore full parity between the frontend’s expected actor API and the backend canister’s exported Candid interface by ensuring all functions used in frontend/src/hooks/useQueries.ts exist and are callable on the deployed canister (including chooseRole, getCallerUserProfile, saveCallerUserProfile, getJobs, getJob, getJobsByEmployer, createJob, deleteJob, applyForJob, getApplicationsForCandidate, getApplicationsForJob, updateApplicationStatus).",
+      "reqIds": [
+        "REQ-12"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-user-facing-error-handling-for-actor-call-failures-related-to-missing-unsupported-methods-so-the-ui-shows-a-clear-english-message-and-does-not-silently-fail-when-a-backend-method-is-unavailable-including-on-job-detail-apply-employer-job-creation-and-application-status-update-actions",
+      "title": "Add user-facing error handling for actor call failures related to missing/unsupported methods so the UI shows a clear English message (and does not silently fail) when a backend method is unavailable, including on Job detail apply, Employer job creation, and application status update actions.",
+      "reqIds": [
+        "REQ-13"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Clone Wrokindia.in (website/app functionality and UI).",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Rename branding from Workindia to Instant Jobs across the cloned product.",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Create the core data models and backend APIs for a job marketplace: Job (created by Employer), JobApplication (created by Candidate for a Job), and UserProfile (per principal, with role-specific fields). Include CRUD for Employer jobs, job browsing/searching for Candidates, and application submission + status updates.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Add real Google Authentication for login & signup (Google OAuth sign-in).",
+      "reqIds": [],
+      "status": "pending"
+    }
+  ],
+  "projectName": "Instant Jobs",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}
