@@ -1,5 +1,5 @@
 {
-  "frontend/src/App.tsx": "Main application component with TanStack Router setup for landing, login, employer candidates, and admin routes with role-based protection.",
+  "frontend/src/App.tsx": "Main application component with TanStack Router setup for landing, login, employer candidates, and admin routes with role-based protection, now wrapping RouterProvider with ManualAuthProvider to prevent context errors.",
   "frontend/src/hooks/useQueries.ts": "React Query hooks for backend operations including user profile management and candidate directory fetching, with proper actor method guards and error handling.",
   "frontend/src/components/AppLayout.tsx": "Shared layout wrapper applying role-aware data attributes for theme differentiation across jobseeker/employer/admin sections.",
   "frontend/src/components/AppHeader.tsx": "Global navigation header with manual auth login/logout, role-based navigation for employer and admin, and role badge display.",

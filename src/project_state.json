@@ -1,19 +1,22 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 15,
+  "projectStateVersion": 17,
   "summary": "Shift scope to build a mobile-first Indian job portal (Instant Jobs) inspired by JobHai.com with similar workflows and monetization (credits-based jobseeker profile unlock), but with original colorful branding and a traditional manual-credentials authentication system for Jobseeker/Employer/Admin plus an Admin panel to control credits and moderation.",
   "architectural_notes": [
     "Authentication decision: remove Internet Identity; use traditional username/email + password logins with RBAC for Jobseeker/Employer/Admin.",
-    "Admin login to be supported with manual credentials (currently provided as admin@ppsjobs.com / 9277492395); ensure secrets are stored securely (not hardcoded) and support changing credentials."
+    "Admin login to be supported with manual credentials (currently provided as admin@ppsjobs.com / 9277492395); ensure secrets are stored securely (not hardcoded) and support changing credentials.",
+    "Ensure <ManualAuthProvider> wraps the entire app/router tree (e.g., in main.tsx/App.tsx) so pages like Home can safely call useManualAuth()."
   ],
   "known_issues": [
     "User reports that some functions are missing after deployment; needs investigation and restoration of expected functionality.",
     "Employer panel appears to be using employee/candidate UI; needs correction to proper Employer dashboard.",
     "Currency is displayed as $ instead of ₹ in the UI.",
     "Employers cannot view candidate details in the candidate browsing/search (candidate directory) flow; needs a candidate detail view and/or data access fix.",
-    "Security risk to address: admin credentials were provided explicitly; must not be hardcoded or stored in plaintext—use secure storage + hashing and allow rotation."
+    "Security risk to address: admin credentials were provided explicitly; must not be hardcoded or stored in plaintext—use secure storage + hashing and allow rotation.",
+    "Runtime error on initial load/Home page: \"useManualAuth must be used within ManualAuthProvider\" indicating Home (or an ancestor) calls useManualAuth() without being wrapped by <ManualAuthProvider>.",
+    "Home page is currently the first page triggering the ManualAuthProvider/hook context error; provider placement likely too low in the component tree."
   ],
-  "isFixRequest": false,
+  "isFixRequest": true,
   "existing_features": [
     {
       "id": "feature-implement-internet-identity-authentication-and-an-app-level-user-model-that-supports-two-roles-candidate-and-employer-provide-a-role-selection-confirmation-step-on-first-sign-in-and-persist-the-chosen-role-for-subsequent-sessions",
@@ -164,6 +167,14 @@
       "title": "Apply a fully custom, unique, colorful, mobile-first UI/UX theme across the app (while keeping ‘Instant Jobs’ branding), including distinct styling for employer vs jobseeker vs admin sections, without using Internet Identity-related visuals/copy.",
       "reqIds": [
         "REQ-25"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-fix-the-runtime-error-on-initial-load-landing-home-route-where-usemanualauth-is-called-outside-of-manualauthprovider-by-wrapping-the-application-route-tree-with-manualauthprovider-at-a-level-that-covers-rootlayout-applayout-appheader-and-all-routed-pages-without-editing-frontend-src-main-tsx-immutable",
+      "title": "Fix the runtime error on initial load (Landing/Home route) where `useManualAuth` is called outside of `ManualAuthProvider` by wrapping the application route tree with `<ManualAuthProvider>` at a level that covers `RootLayout`, `AppLayout`, `AppHeader`, and all routed pages, without editing `frontend/src/main.tsx` (immutable).",
+      "reqIds": [
+        "REQ-27"
       ],
       "version": 1
     }

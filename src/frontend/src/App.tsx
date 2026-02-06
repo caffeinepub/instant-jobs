@@ -1,5 +1,5 @@
 import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet } from '@tanstack/react-router';
-import { useManualAuth } from './hooks/useManualAuth';
+import { useManualAuth, ManualAuthProvider } from './hooks/useManualAuth';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './components/auth/LoginPage';
 import AdminPanelPage from './pages/admin/AdminPanelPage';
@@ -75,8 +75,10 @@ declare module '@tanstack/react-router' {
 export default function App() {
   return (
     <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-      <RouterProvider router={router} />
-      <Toaster />
+      <ManualAuthProvider>
+        <RouterProvider router={router} />
+        <Toaster />
+      </ManualAuthProvider>
     </ThemeProvider>
   );
 }
