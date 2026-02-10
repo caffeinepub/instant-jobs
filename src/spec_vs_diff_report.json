@@ -1,14 +1,76 @@
 {
   "kind": "spec_vs_diff_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T12:57:07.749Z",
-  "summary": "REQ-27 appears implemented by wrapping the TanStack Router route tree with <ManualAuthProvider> in an editable file (frontend/src/App.tsx), ensuring components rendered via RouterProvider (including RootLayout/AppLayout and routed pages) are within the provider context. No changes to frontend/src/main.tsx are shown in the diff summary.",
-  "missing_requirements": [],
-  "hallucinated_features": [],
-  "confidence": 0.78,
+  "generatedAt": "2026-02-10T04:16:38.258Z",
+  "summary": "Diff implements a manual-auth flow with localStorage-backed sessions/accounts, redirects signup/login to /profile-setup when profile is incomplete, and adds jobseeker experience-entry data structures plus part of a Profile Setup page with up-to-5 experience entries. However, several acceptance-criteria details (notably explicit Email field in Profile Setup, verified fresher/experienced UI behavior, and confirmed post-submit routing + persistence updates) are not fully evidenced in the provided diff summary, and a few unrequested features (admin login, role setup modal, Internet Identity help dialog) appear to be introduced.",
+  "missing_requirements": [
+    {
+      "id": "REQ-2",
+      "requirement": "Profile Setup for role=jobseeker must collect Name, Mobile Number, Email ID, Current Location, and an Experience Status dropdown (Fresher/Experienced).",
+      "reason": "ProfileSetupPage validation uses session?.email but the diff excerpt does not show an Email ID input being rendered/collected in the jobseeker form UI.",
+      "evidence": [
+        "frontend/src/components/profile/ProfileSetupPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "When Experience Status = Fresher, the experience-entry UI is hidden and no experience entries are required; when Experienced, show experience-entry UI with add/edit/remove up to 5 and prevent adding a 6th with clear English validation messaging.",
+      "reason": "The diff shows add/remove/update functions and the 5-entry limit error message, but the excerpt is truncated before any UI conditional rendering based on Fresher/Experienced is visible.",
+      "evidence": [
+        "frontend/src/components/profile/ProfileSetupPage.tsx"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "On successful Profile Setup submit, navigate to /jobseeker/dashboard (jobseeker) or /employer/candidates (employer), and persist manual-auth stored state so the user is not repeatedly redirected back to /profile-setup after refresh.",
+      "reason": "ProfileSetupPage imports markProfileComplete and useNavigate, but the provided excerpt is truncated before showing the success path that calls markProfileComplete and performs the required role-based navigation. useManualAuth implementation is also truncated before showing markProfileComplete behavior updating storage.",
+      "evidence": [
+        "frontend/src/components/profile/ProfileSetupPage.tsx",
+        "frontend/src/hooks/useManualAuth.tsx"
+      ]
+    },
+    {
+      "id": "REQ-1",
+      "requirement": "Protected routes must not get stuck rendering only a loading indicator due to profile completeness checks; if profile completeness cannot be determined via backend, fall back to manual-auth stored state and do not block with an infinite spinner.",
+      "reason": "ProtectedRoute explicitly navigates to /profile-setup and returns a spinner while redirecting; the diff summary does not show any additional guard to prevent repeated redirects/spinner loops in edge cases (e.g., if /profile-setup is itself protected by a role-based ProtectedRoute, or if navigation triggers re-renders).",
+      "evidence": [
+        "frontend/src/components/auth/ProtectedRoute.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "Admin role added to manual auth types and Login UI includes an Admin tab/route handling.",
+      "reason": "BuildRequest focuses on jobseeker/employer manual auth and profile setup; admin login/role is not requested.",
+      "evidence": [
+        "frontend/src/auth/manualAuthTypes.ts",
+        "frontend/src/components/auth/LoginPage.tsx"
+      ]
+    },
+    {
+      "description": "RoleSetupModal feature that saves a profile via a two-step modal for first-time users.",
+      "reason": "BuildRequest specifies routing to a dedicated /profile-setup page after signup/login; a separate role-setup modal flow is not requested.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    },
+    {
+      "description": "InternetIdentityHelpDialog UI component explaining Internet Identity.",
+      "reason": "BuildRequest constraints explicitly say not to use Internet Identity, but do not request adding explanatory UI/help content about it.",
+      "evidence": [
+        "frontend-file-summaries.txt"
+      ]
+    }
+  ],
+  "confidence": 0.56,
   "changed_files": [
     "frontend-file-summaries.txt",
-    "frontend/src/App.tsx",
+    "frontend/src/auth/manualAuthTypes.ts",
+    "frontend/src/components/auth/LoginPage.tsx",
+    "frontend/src/components/auth/ProtectedRoute.tsx",
+    "frontend/src/components/auth/SignupPage.tsx",
+    "frontend/src/components/profile/ProfileSetupPage.tsx",
+    "frontend/src/hooks/useManualAuth.tsx",
     "project_state.json"
   ]
 }

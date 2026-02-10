@@ -1,180 +1,37 @@
 {
   "schemaVersion": "1.0.0",
-  "projectStateVersion": 17,
-  "summary": "Shift scope to build a mobile-first Indian job portal (Instant Jobs) inspired by JobHai.com with similar workflows and monetization (credits-based jobseeker profile unlock), but with original colorful branding and a traditional manual-credentials authentication system for Jobseeker/Employer/Admin plus an Admin panel to control credits and moderation.",
+  "projectStateVersion": 3,
+  "summary": "Implementing a custom (non-Internet Identity) signup flow that routes users to a Jobseeker Profile Setup page after signup, including dynamic experience entries.",
   "architectural_notes": [
-    "Authentication decision: remove Internet Identity; use traditional username/email + password logins with RBAC for Jobseeker/Employer/Admin.",
-    "Admin login to be supported with manual credentials (currently provided as admin@ppsjobs.com / 9277492395); ensure secrets are stored securely (not hardcoded) and support changing credentials.",
-    "Ensure <ManualAuthProvider> wraps the entire app/router tree (e.g., in main.tsx/App.tsx) so pages like Home can safely call useManualAuth()."
+    "Authentication should be custom (do not use Internet Identity).",
+    "Post-signup navigation must route users to the Profile Setup page."
   ],
   "known_issues": [
-    "User reports that some functions are missing after deployment; needs investigation and restoration of expected functionality.",
-    "Employer panel appears to be using employee/candidate UI; needs correction to proper Employer dashboard.",
-    "Currency is displayed as $ instead of ₹ in the UI.",
-    "Employers cannot view candidate details in the candidate browsing/search (candidate directory) flow; needs a candidate detail view and/or data access fix.",
-    "Security risk to address: admin credentials were provided explicitly; must not be hardcoded or stored in plaintext—use secure storage + hashing and allow rotation.",
-    "Runtime error on initial load/Home page: \"useManualAuth must be used within ManualAuthProvider\" indicating Home (or an ancestor) calls useManualAuth() without being wrapped by <ManualAuthProvider>.",
-    "Home page is currently the first page triggering the ManualAuthProvider/hook context error; provider placement likely too low in the component tree."
+    "After signup, user does not reach the next page (Profile Setup) and the app keeps buffering."
   ],
   "isFixRequest": true,
   "existing_features": [
     {
-      "id": "feature-implement-internet-identity-authentication-and-an-app-level-user-model-that-supports-two-roles-candidate-and-employer-provide-a-role-selection-confirmation-step-on-first-sign-in-and-persist-the-chosen-role-for-subsequent-sessions",
-      "title": "Implement Internet Identity authentication and an app-level user model that supports two roles: Candidate and Employer. Provide a role selection/confirmation step on first sign-in and persist the chosen role for subsequent sessions.",
+      "id": "feature-fix-the-infinite-loading-buffering-after-manual-signup-so-that-users-reliably-navigate-to-the-profile-setup-page-and-can-interact-with-the-form-immediately-no-spinner-loop",
+      "title": "Fix the infinite loading/buffering after manual signup so that users reliably navigate to the Profile Setup page and can interact with the form immediately (no spinner loop).",
       "reqIds": [
         "REQ-1"
       ],
       "version": 1
     },
     {
-      "id": "feature-build-public-unauthenticated-pages-that-mirror-a-job-marketplace-like-wrokindia-in-branded-as-instant-jobs-a-landing-home-page-a-job-search-browse-page-and-a-job-detail-page-the-landing-page-should-clearly-present-the-two-user-journeys-find-jobs-hire-candidates-and-route-users-appropriately",
-      "title": "Build public (unauthenticated) pages that mirror a job marketplace like Wrokindia.in, branded as “Instant Jobs”: a landing/home page, a job search/browse page, and a job detail page. The landing page should clearly present the two user journeys (Find Jobs / Hire Candidates) and route users appropriately.",
+      "id": "feature-implement-the-jobseeker-profile-setup-form-fields-and-behavior-as-specified-collect-name-mobile-number-email-id-current-location-and-an-experience-status-dropdown-fresher-or-experienced-if-experienced-is-selected-allow-the-user-to-add-edit-remove-up-to-5-experience-entries-each-with-company-name-designation-process-last-salary-and-total-duration-months-or-years",
+      "title": "Implement the Jobseeker Profile Setup form fields and behavior as specified: collect Name, Mobile Number, Email ID, Current Location, and an Experience status dropdown (Fresher or Experienced). If Experienced is selected, allow the user to add/edit/remove up to 5 experience entries, each with Company Name, Designation, Process, Last Salary, and total duration (months or years).",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-persist-manual-auth-profile-completion-state-so-that-after-completing-profile-setup-the-user-is-routed-to-the-correct-next-page-and-will-not-be-repeatedly-forced-back-into-profile-setup-on-subsequent-visits",
+      "title": "Persist manual-auth profile completion state so that after completing Profile Setup the user is routed to the correct next page and will not be repeatedly forced back into /profile-setup on subsequent visits.",
       "reqIds": [
         "REQ-3"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-build-candidate-features-and-ui-candidate-dashboard-showing-applied-jobs-ability-to-apply-to-a-job-via-an-application-form-and-view-application-status-history-current-status",
-      "title": "Build Candidate features and UI: Candidate dashboard showing applied jobs, ability to apply to a job via an application form, and view application status history/current status.",
-      "reqIds": [
-        "REQ-4"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-build-employer-features-and-ui-employer-dashboard-with-job-posting-form-manage-posted-jobs-view-applicants-per-job-and-update-applicant-application-status",
-      "title": "Build Employer features and UI: Employer dashboard with job posting form, manage posted jobs, view applicants per job, and update applicant/application status.",
-      "reqIds": [
-        "REQ-5"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-apply-instant-jobs-branding-across-the-entire-product-name-logo-headings-metadata-do-not-use-workindia-in-any-user-visible-content",
-      "title": "Apply “Instant Jobs” branding across the entire product (name, logo, headings, metadata). Do not use “Workindia” in any user-visible content.",
-      "reqIds": [
-        "REQ-6"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-establish-a-coherent-visual-theme-for-the-clone-colors-typography-spacing-components-suitable-for-a-modern-job-marketplace-and-apply-it-consistently-across-pages-using-tailwind-the-existing-ui-component-library",
-      "title": "Establish a coherent visual theme for the clone (colors, typography, spacing, components) suitable for a modern job marketplace, and apply it consistently across pages using Tailwind + the existing UI component library.",
-      "reqIds": [
-        "REQ-7"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-generated-static-image-assets-to-the-frontend-and-render-them-in-the-ui-store-under-frontend-public-assets-generated-use-these-assets-for-the-product-logo-and-landing-page-hero-illustration",
-      "title": "Add generated static image assets to the frontend and render them in the UI (store under frontend/public/assets/generated). Use these assets for the product logo and landing page hero illustration.",
-      "reqIds": [
-        "REQ-8"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-user-facing-authentication-ux-that-clearly-communicates-the-app-uses-internet-identity-for-login-signup-not-google-oauth-and-update-login-related-ui-copy-accordingly",
-      "title": "Add a user-facing authentication UX that clearly communicates the app uses Internet Identity for login/signup (not Google OAuth), and update login-related UI copy accordingly.",
-      "reqIds": [
-        "REQ-9"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-a-dedicated-easy-to-find-help-section-e-g-on-the-landing-page-or-a-small-modal-linked-near-the-login-button-explaining-what-internet-identity-is-and-how-to-use-it-to-create-an-account-and-sign-in",
-      "title": "Add a dedicated, easy-to-find help section (e.g., on the landing page or a small modal linked near the Login button) explaining what Internet Identity is and how to use it to create an account and sign in.",
-      "reqIds": [
-        "REQ-10"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-identify-which-backend-canister-functions-are-reported-as-missing-after-the-latest-deployment-by-reproducing-the-issue-in-the-running-app-and-capturing-the-exact-console-runtime-errors-e-g-actor-method-is-not-a-function-or-candid-method-not-found",
-      "title": "Identify which backend canister functions are reported as “missing” after the latest deployment by reproducing the issue in the running app and capturing the exact console/runtime errors (e.g., \"actor.<method> is not a function\" or Candid method-not-found).",
-      "reqIds": [
-        "REQ-11"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-restore-full-parity-between-the-frontend-s-expected-actor-api-and-the-backend-canister-s-exported-candid-interface-by-ensuring-all-functions-used-in-frontend-src-hooks-usequeries-ts-exist-and-are-callable-on-the-deployed-canister-including-chooserole-getcalleruserprofile-savecalleruserprofile-getjobs-getjob-getjobsbyemployer-createjob-deletejob-applyforjob-getapplicationsforcandidate-getapplicationsforjob-updateapplicationstatus",
-      "title": "Restore full parity between the frontend’s expected actor API and the backend canister’s exported Candid interface by ensuring all functions used in frontend/src/hooks/useQueries.ts exist and are callable on the deployed canister (including chooseRole, getCallerUserProfile, saveCallerUserProfile, getJobs, getJob, getJobsByEmployer, createJob, deleteJob, applyForJob, getApplicationsForCandidate, getApplicationsForJob, updateApplicationStatus).",
-      "reqIds": [
-        "REQ-12"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-user-facing-error-handling-for-actor-call-failures-related-to-missing-unsupported-methods-so-the-ui-shows-a-clear-english-message-and-does-not-silently-fail-when-a-backend-method-is-unavailable-including-on-job-detail-apply-employer-job-creation-and-application-status-update-actions",
-      "title": "Add user-facing error handling for actor call failures related to missing/unsupported methods so the UI shows a clear English message (and does not silently fail) when a backend method is unavailable, including on Job detail apply, Employer job creation, and application status update actions.",
-      "reqIds": [
-        "REQ-13"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-add-frontend-react-query-hook-s-to-call-the-new-backend-candidate-directory-api-with-guarded-actor-method-checks-and-usable-filter-parameters",
-      "title": "Add frontend React Query hook(s) to call the new backend candidate-directory API with guarded actor-method checks and usable filter parameters.",
-      "reqIds": [
-        "REQ-15"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-an-employer-facing-ui-page-to-browse-search-jobseekers-with-filters-and-add-routing-navigation-so-employers-can-easily-access-it",
-      "title": "Create an Employer-facing UI page to browse/search jobseekers with filters, and add routing/navigation so Employers can easily access it.",
-      "reqIds": [
-        "REQ-16"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-replace-the-current-internet-identity-based-authentication-flow-with-an-in-app-manual-credentials-authentication-system-supporting-three-roles-jobseeker-employer-and-admin-and-ensure-all-role-gated-pages-are-inaccessible-until-the-appropriate-role-is-logged-in",
-      "title": "Replace the current Internet Identity-based authentication flow with an in-app, manual-credentials authentication system supporting three roles: Jobseeker, Employer, and Admin, and ensure all role-gated pages are inaccessible until the appropriate role is logged in.",
-      "reqIds": [
-        "REQ-17"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-create-an-admin-panel-ui-with-full-control-over-the-platform-manage-employers-and-jobseekers-manually-add-deduct-employer-credits-set-credit-cost-per-unlock-view-unlock-activity-logs-optionally-approve-reject-job-postings-disable-any-account-instantly-and-show-a-metrics-dashboard-total-employers-total-jobseekers-credits-used-active-jobs",
-      "title": "Create an Admin Panel UI with full control over the platform: manage employers and jobseekers, manually add/deduct employer credits, set credit cost per unlock, view unlock activity logs, optionally approve/reject job postings, disable any account instantly, and show a metrics dashboard (total employers, total jobseekers, credits used, active jobs).",
-      "reqIds": [
-        "REQ-22"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-employer-facing-ui-to-support-credits-unlocking-show-available-credit-balance-show-locked-candidate-cards-with-a-clear-locked-state-prompt-for-confirmation-before-unlock-and-after-unlock-reveal-full-candidate-details-and-mark-as-unlocked-permanently",
-      "title": "Update Employer-facing UI to support credits + unlocking: show available credit balance, show locked candidate cards with a clear locked state, prompt for confirmation before unlock, and after unlock reveal full candidate details and mark as unlocked permanently.",
-      "reqIds": [
-        "REQ-23"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-update-job-posting-and-browsing-to-match-indian-job-portal-expectations-salary-displayed-in-only-mobile-first-card-based-listings-and-fast-filters-location-salary-experience-process-across-job-browse-ui",
-      "title": "Update Job posting and browsing to match Indian job portal expectations: salary displayed in ₹ only, mobile-first card-based listings, and fast filters (location, salary, experience, process) across job browse UI.",
-      "reqIds": [
-        "REQ-24"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-apply-a-fully-custom-unique-colorful-mobile-first-ui-ux-theme-across-the-app-while-keeping-instant-jobs-branding-including-distinct-styling-for-employer-vs-jobseeker-vs-admin-sections-without-using-internet-identity-related-visuals-copy",
-      "title": "Apply a fully custom, unique, colorful, mobile-first UI/UX theme across the app (while keeping ‘Instant Jobs’ branding), including distinct styling for employer vs jobseeker vs admin sections, without using Internet Identity-related visuals/copy.",
-      "reqIds": [
-        "REQ-25"
-      ],
-      "version": 1
-    },
-    {
-      "id": "feature-fix-the-runtime-error-on-initial-load-landing-home-route-where-usemanualauth-is-called-outside-of-manualauthprovider-by-wrapping-the-application-route-tree-with-manualauthprovider-at-a-level-that-covers-rootlayout-applayout-appheader-and-all-routed-pages-without-editing-frontend-src-main-tsx-immutable",
-      "title": "Fix the runtime error on initial load (Landing/Home route) where `useManualAuth` is called outside of `ManualAuthProvider` by wrapping the application route tree with `<ManualAuthProvider>` at a level that covers `RootLayout`, `AppLayout`, `AppHeader`, and all routed pages, without editing `frontend/src/main.tsx` (immutable).",
-      "reqIds": [
-        "REQ-27"
       ],
       "version": 1
     }
@@ -182,140 +39,18 @@
   "new_feature_requests": [
     {
       "id": "AR-1",
-      "summary": "Clone Wrokindia.in (website/app functionality and UI).",
+      "summary": "Create custom signup/login flow (not Internet Identity) and redirect to Profile Setup after signup",
       "reqIds": [],
       "status": "pending"
     },
     {
       "id": "AR-2",
-      "summary": "Rename branding from Workindia to Instant Jobs across the cloned product.",
+      "summary": "Build Jobseeker Profile Setup form: name, mobile, email, location, fresher/experienced dropdown; if experienced allow up to 5 experience entries (company, designation, process, last salary, duration)",
       "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-4",
-      "summary": "Create the core data models and backend APIs for a job marketplace: Job (created by Employer), JobApplication (created by Candidate for a Job), and UserProfile (per principal, with role-specific fields). Include CRUD for Employer jobs, job browsing/searching for Candidates, and application submission + status updates.",
-      "reqIds": [
-        "REQ-2"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-3",
-      "summary": "Add real Google Authentication for login & signup (Google OAuth sign-in).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-5",
-      "summary": "Fix Employer panel UI/UX so it is clearly an Employer dashboard (not resembling an employee/candidate panel).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-6",
-      "summary": "Replace currency display from $ to ₹ across the product UI.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-7",
-      "summary": "Develop/enable backend data storage so all app features work end-to-end (persist jobs, applications, and user profiles).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-8",
-      "summary": "Enable Employers to access a searchable/browsable database of jobseekers (candidate directory) with filtering capabilities.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-9",
-      "summary": "Add backend canister query API(s) that allow an authenticated Employer to browse/search a directory of all available jobseekers (Candidates) on the platform.",
-      "reqIds": [
-        "REQ-14"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-10",
-      "summary": "Allow Employers to view full candidate details from the candidate directory (candidate profile/detail view) and ensure Employers have access to the jobseeker database.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-11",
-      "summary": "Replace Internet Identity/unsupported auth with a traditional manual-credentials authentication system for Jobseeker, Employer, and Admin (role-based access control; dashboards hidden until login).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-12",
-      "summary": "Implement credits-based jobseeker profile unlock system: blurred/limited employer view pre-unlock, one-time unlock with no repeat deductions, permanent access post-unlock, prevent unlock if insufficient credits, confirm before unlock, transaction-safe deduction.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-13",
-      "summary": "Build Admin panel for full control: manage employers/jobseekers, manually add/deduct employer credits, define credit cost per unlock, view unlock activity/logs, optionally approve/reject job postings, disable accounts, show key metrics dashboard.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-14",
-      "summary": "Jobseeker module enhancements: required profile fields (name, mobile, email, company, role/process, experience, last salary ₹, preferred location, active/inactive), edit anytime, apply for jobs, view applied jobs list.",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-15",
-      "summary": "Create a fully custom, unique, colorful, mobile-first UI/UX theme (JobHai-style flows/layout cues but original branding/colors/components) including locked-profile UI states and fast filters (location/salary/experience/process).",
-      "reqIds": [],
-      "status": "pending"
-    },
-    {
-      "id": "AR-17",
-      "summary": "Implement secure credential handling on the backend for manual login: store passwords as salted hashes (never plaintext), issue server-generated session tokens on successful login, validate tokens on all protected backend methods, and provide logout/token invalidation.",
-      "reqIds": [
-        "REQ-18"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-18",
-      "summary": "Add/extend backend data models to match a mobile-first Indian job portal: jobseeker profile fields (Full Name, Mobile Number, Email, Current/Last Company Name, Job Role/Process, Total Experience, Last Drawn Salary in ₹, Preferred Job Location, Active/Inactive), employer fields (Company Name, Contact Person Name, Mobile, Email, Business Location), and support editing profiles anytime.",
-      "reqIds": [
-        "REQ-19"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-19",
-      "summary": "Implement JobHai-style employer credits and candidate-profile unlock system in the backend: admin-defined credit cost per unlock, employer credit balance, one-time unlock per candidate (no repeat deduction), permanent access after unlock, prevent unlock if insufficient credits, transaction-safe deduction, and unlock logs for admin audit.",
-      "reqIds": [
-        "REQ-20"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-20",
-      "summary": "Update the employer candidate directory backend API to support limited pre-unlock views and full post-unlock views, including filter parameters (location, salary, experience, process/role) and ensuring locked fields (mobile, email, company name) are hidden until unlocked.",
-      "reqIds": [
-        "REQ-21"
-      ],
-      "status": "pending"
-    },
-    {
-      "id": "AR-25",
-      "summary": "Add any required data migration to preserve existing canister state when changing user/auth/profile schemas (only if the current deployed state would otherwise break), following the project’s conditional migration policy.",
-      "reqIds": [
-        "REQ-26"
-      ],
       "status": "pending"
     }
   ],
-  "projectName": "Instant Jobs",
+  "projectName": "Fix post-signup buffering and implement Jobseeker Profile Setup (Fresher/Experienced with up to 5 experiences) using manual auth",
   "clarification_mode": "instant",
   "clarification_rounds": 0
 }

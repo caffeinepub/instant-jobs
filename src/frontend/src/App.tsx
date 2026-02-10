@@ -2,8 +2,11 @@ import { createRouter, createRoute, createRootRoute, RouterProvider, Outlet } fr
 import { useManualAuth, ManualAuthProvider } from './hooks/useManualAuth';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './components/auth/LoginPage';
+import SignupPage from './components/auth/SignupPage';
+import ProfileSetupPage from './components/profile/ProfileSetupPage';
 import AdminPanelPage from './pages/admin/AdminPanelPage';
 import EmployerCandidatesPage from './pages/EmployerCandidatesPage';
+import CandidateDashboardPage from './pages/CandidateDashboardPage';
 import AppLayout from './components/AppLayout';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import { ThemeProvider } from 'next-themes';
@@ -37,6 +40,32 @@ const loginRoute = createRoute({
   component: LoginPage,
 });
 
+const signupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/signup',
+  component: SignupPage,
+});
+
+const profileSetupRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/profile-setup',
+  component: () => (
+    <ProtectedRoute requiredRole={['jobseeker', 'employer']}>
+      <ProfileSetupPage />
+    </ProtectedRoute>
+  ),
+});
+
+const candidateDashboardRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/jobseeker/dashboard',
+  component: () => (
+    <ProtectedRoute requiredRole="jobseeker">
+      <CandidateDashboardPage />
+    </ProtectedRoute>
+  ),
+});
+
 const employerCandidatesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/employer/candidates',
@@ -60,6 +89,9 @@ const adminRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
+  signupRoute,
+  profileSetupRoute,
+  candidateDashboardRoute,
   employerCandidatesRoute,
   adminRoute,
 ]);

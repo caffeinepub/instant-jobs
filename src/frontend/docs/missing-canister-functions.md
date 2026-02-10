@@ -1,84 +1,58 @@
-# Missing Canister Functions - Diagnostics Report
+# Missing Canister Functions
 
-## Overview
-This document tracks any missing backend canister methods detected during runtime and provides reproduction steps for debugging.
+This document tracks backend methods that are required by the frontend but not yet implemented in the Motoko canister.
 
-## Diagnostic System
-The frontend includes an automated diagnostics system that:
-1. Checks all required backend methods when the actor is initialized
-2. Logs a detailed report to the browser console
-3. Guards all actor method calls to catch missing methods early
-4. Provides user-friendly error messages when methods are unavailable
+## Actor Diagnostics System
 
-## Required Backend Methods
-The following methods are required by the frontend and are checked on actor initialization:
+The frontend includes an actor diagnostics system that checks for missing backend methods on initialization:
 
-| Method Name | Used In | Status |
-|-------------|---------|--------|
-| `chooseRole` | useChooseRole (RoleSetupModal) | ✅ Present |
-| `getCallerUserProfile` | useGetCallerUserProfile (Auth checks) | ✅ Present |
-| `saveCallerUserProfile` | useSaveCallerUserProfile (RoleSetupModal) | ✅ Present |
-| `getJobs` | useGetJobs (JobsBrowsePage) | ✅ Present |
-| `getJob` | useGetJob (JobDetailPage) | ✅ Present |
-| `getJobsByEmployer` | useGetJobsByEmployer (EmployerDashboardPage) | ✅ Present |
-| `createJob` | useCreateJob (EmployerJobForm) | ✅ Present |
-| `deleteJob` | useDeleteJob (EmployerDashboardPage) | ✅ Present |
-| `applyForJob` | useApplyForJob (CandidateApplyForm) | ✅ Present |
-| `getApplicationsForCandidate` | useGetCandidateApplications (CandidateDashboardPage) | ✅ Present |
-| `getApplicationsForJob` | useGetJobApplications (EmployerJobApplicationsPage) | ✅ Present |
-| `updateApplicationStatus` | useUpdateApplicationStatus (EmployerJobApplicationsPage) | ✅ Present |
+- **Location**: `frontend/src/utils/actorDiagnostics.ts`
+- **Usage**: Automatically runs when the actor is initialized in `useActor.ts`
+- **Output**: Console logs showing which methods are present/missing
 
-## How to Check for Missing Methods
+## Currently Required Methods
 
-### 1. Browser Console
-After logging in, open the browser console (F12) and look for:
-- ✅ "Actor diagnostics: All required methods are present" - All good!
-- ⚠️ "Actor diagnostics: Missing backend methods detected" - Methods are missing
+The following methods are used by the frontend and should be present in the backend:
 
-### 2. User Actions
-If methods are missing, users will see friendly error messages:
-- "This feature is temporarily unavailable. Please try again later."
+### User Profile Management
+- ✅ `getCallerUserProfile()` - Get current user's profile
+- ✅ `saveCallerUserProfile(profile)` - Save current user's profile
 
-### 3. Console Errors
-Look for errors containing:
-- "is not a function"
-- "method not found"
-- "Backend method '...' is not available"
+### Candidate Directory & Credits
+- ✅ `getCandidateDirectory()` - Get all candidate profiles (employer only)
+- ✅ `getCreditBalance()` - Get employer's credit balance
+- ✅ `getCreditCostPerUnlock()` - Get cost to unlock a profile
+- ✅ `unlockCandidateProfile(principal)` - Unlock a candidate profile
 
-## Reproduction Steps
+### Admin Operations
+- ✅ `getAllEmployers()` - Get all employers with credit info
+- ✅ `getAllJobseekers()` - Get all jobseeker principals
+- ✅ `getAllUnlockLogs()` - Get all unlock activity logs
+- ✅ `addCredits(principal, amount)` - Add credits to employer
+- ✅ `deductCredits(principal, amount)` - Deduct credits from employer
+- ✅ `setCreditCostPerUnlock(cost)` - Set unlock cost
 
-### Candidate Flow
-1. Sign in with Internet Identity
-2. Choose "Candidate" role and complete profile setup
-3. Browse jobs at `/jobs`
-4. Click on a job to view details
-5. Click "Apply Now" and submit application
-6. View applications at `/candidate/dashboard`
+### Jobs & Applications (NOT IMPLEMENTED IN BACKEND)
+- ❌ `getJobs()` - Get all job postings
+- ❌ `getJob(id)` - Get a specific job by ID
+- ❌ `getJobsByEmployer()` - Get jobs posted by current employer
+- ❌ `createJob(job)` - Create a new job posting
+- ❌ `deleteJob(id)` - Delete a job posting
+- ❌ `applyForJob(application)` - Submit a job application
+- ❌ `getApplicationsForCandidate()` - Get applications for current candidate
+- ❌ `getApplicationsForJob(jobId)` - Get applications for a specific job
+- ❌ `updateApplicationStatus(appId, status)` - Update application status
 
-**Expected:** All steps complete without errors
-**If errors occur:** Note which step fails and check console for method name
-
-### Employer Flow
-1. Sign in with Internet Identity
-2. Choose "Employer" role and complete profile setup
-3. Go to `/employer/dashboard`
-4. Click "Post New Job" and create a job
-5. View the job in the dashboard
-6. Click "View Applications" on a job
-7. Update an application status
-
-**Expected:** All steps complete without errors
-**If errors occur:** Note which step fails and check console for method name
+### Authentication (NOT IMPLEMENTED IN BACKEND)
+- ❌ `login(email, password, role)` - Authenticate user and return session token
+- ❌ `logout(token)` - Invalidate session token
+- ❌ `validateSession(token)` - Check if session token is valid
 
 ## Known Issues
-Currently: **No known issues** - All required backend methods are present and functional.
 
-## Error Handling
-The frontend includes robust error handling:
-- All actor calls are guarded with method existence checks
-- Missing methods throw `ActorMethodMissingError` with context
-- User-facing errors are normalized to friendly messages
-- Forms remain usable after errors (no broken state)
+### 1. Candidate Directory - Missing Principal IDs
+**Issue**: The `getCandidateDirectory()` method returns `UserProfile[]` but doesn't include the Principal ID for each candidate.
 
-## Last Updated
-February 6, 2026 - Initial diagnostics system implementation
+**Impact**: Employers cannot unlock candidates because we don't know their Principal IDs.
+
+**Solution**: Backend should return a tuple or object that includes both the Principal and the UserProfile:

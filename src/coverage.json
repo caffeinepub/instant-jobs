@@ -1,34 +1,73 @@
 {
   "kind": "coverage_report",
   "version": "1.0",
-  "generatedAt": "2026-02-06T12:57:07.752Z",
+  "generatedAt": "2026-02-10T04:16:38.260Z",
   "sources": {
     "buildRequest": true,
     "implementationPlan": true
   },
   "requirements": {
-    "total": 1,
-    "implemented": 1,
+    "total": 3,
+    "implemented": 3,
     "items": [
       {
-        "id": "REQ-27",
-        "summary": "Fix the runtime error on initial load (Landing/Home route) where `useManualAuth` is called outside of `ManualAuthProvider` by wrapping the application route tree with `<ManualAuthProvider>` at a level that covers `RootLayout`, `AppLayout`, `AppHeader`, and all routed pages, without editing `frontend/src/main.tsx` (immutable).",
+        "id": "REQ-1",
+        "summary": "Fix the infinite loading/buffering after manual signup so that users reliably navigate to the Profile Setup page and can interact with the form immediately (no spinner loop).",
         "status": "implemented",
         "plannedFiles": [
-          "frontend/src/App.tsx"
+          "frontend/src/components/auth/ProtectedRoute.tsx",
+          "frontend/src/hooks/useQueries.ts",
+          "frontend/src/components/auth/SignupPage.tsx"
         ],
         "matchedFiles": [
-          "frontend/src/App.tsx"
+          "frontend/src/components/auth/ProtectedRoute.tsx",
+          "frontend/src/components/auth/SignupPage.tsx"
+        ]
+      },
+      {
+        "id": "REQ-2",
+        "summary": "Implement the Jobseeker Profile Setup form fields and behavior as specified: collect Name, Mobile Number, Email ID, Current Location, and an Experience status dropdown (Fresher or Experienced). If Experienced is selected, allow the user to add/edit/remove up to 5 experience entries, each with Company Name, Designation, Process, Last Salary, and total duration (months or years).",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/components/profile/ProfileSetupPage.tsx",
+          "frontend/src/auth/manualAuthTypes.ts"
+        ],
+        "matchedFiles": [
+          "frontend/src/components/profile/ProfileSetupPage.tsx",
+          "frontend/src/auth/manualAuthTypes.ts"
+        ]
+      },
+      {
+        "id": "REQ-3",
+        "summary": "Persist manual-auth profile completion state so that after completing Profile Setup the user is routed to the correct next page and will not be repeatedly forced back into /profile-setup on subsequent visits.",
+        "status": "implemented",
+        "plannedFiles": [
+          "frontend/src/hooks/useManualAuth.tsx",
+          "frontend/src/components/profile/ProfileSetupPage.tsx",
+          "frontend/src/components/auth/ProtectedRoute.tsx",
+          "frontend/src/components/auth/LoginPage.tsx"
+        ],
+        "matchedFiles": [
+          "frontend/src/hooks/useManualAuth.tsx",
+          "frontend/src/components/profile/ProfileSetupPage.tsx",
+          "frontend/src/components/auth/ProtectedRoute.tsx",
+          "frontend/src/components/auth/LoginPage.tsx"
         ]
       }
     ]
   },
   "changedFiles": [
     "build-request.json",
+    "caffeine.lock.json",
     "feature_evidence.json",
     "frontend-file-summaries.txt",
     "frontend-implementation-plan.json",
-    "frontend/src/App.tsx",
+    "frontend/src/auth/manualAuthTypes.ts",
+    "frontend/src/components/auth/LoginPage.tsx",
+    "frontend/src/components/auth/ProtectedRoute.tsx",
+    "frontend/src/components/auth/SignupPage.tsx",
+    "frontend/src/components/profile/ProfileSetupPage.tsx",
+    "frontend/src/hooks/useManualAuth.tsx",
     "project_state.json",
     "scratch/component-selection.json",
     "spec.md",

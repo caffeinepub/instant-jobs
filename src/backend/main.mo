@@ -1,20 +1,17 @@
-import Array "mo:core/Array";
-import Order "mo:core/Order";
 import Map "mo:core/Map";
-import Set "mo:core/Set";
+import Order "mo:core/Order";
+import Principal "mo:core/Principal";
 import Text "mo:core/Text";
 import Nat "mo:core/Nat";
 import Int "mo:core/Int";
+import Array "mo:core/Array";
+import Set "mo:core/Set";
 import Iter "mo:core/Iter";
-import Principal "mo:core/Principal";
-import Runtime "mo:core/Runtime";
 import Time "mo:core/Time";
-
+import Runtime "mo:core/Runtime";
 
 import MixinAuthorization "authorization/MixinAuthorization";
 import AccessControl "authorization/access-control";
-
-// Specify data migration via with-clause
 
 actor {
   let accessControlState = AccessControl.initState();
@@ -365,7 +362,7 @@ actor {
   let defaultTimeout : Int = 5_184_000_000_000;
 
   // Admin-only: Set session timeout
-  public shared ({ caller }) func setSessionTimeout(timeout : Int) : async () {
+  public shared ({ caller }) func setSessionTimeout(_ : Int) : async () {
     if (not (AccessControl.hasPermission(accessControlState, caller, #admin))) {
       Runtime.trap("Unauthorized: Only admins can set session timeout");
     };

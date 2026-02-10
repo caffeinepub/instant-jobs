@@ -1,38 +1,77 @@
 {
   "kind": "build_request",
-  "title": "Fix Home page crash by ensuring ManualAuthProvider wraps the route tree",
-  "priority": "high",
+  "title": "Fix post-signup buffering and implement Jobseeker Profile Setup (Fresher/Experienced with up to 5 experiences) using manual auth",
+  "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-27",
-      "text": "Fix the runtime error on initial load (Landing/Home route) where `useManualAuth` is called outside of `ManualAuthProvider` by wrapping the application route tree with `<ManualAuthProvider>` at a level that covers `RootLayout`, `AppLayout`, `AppHeader`, and all routed pages, without editing `frontend/src/main.tsx` (immutable).",
+      "id": "REQ-1",
+      "text": "Fix the infinite loading/buffering after manual signup so that users reliably navigate to the Profile Setup page and can interact with the form immediately (no spinner loop).",
       "target": "frontend",
       "source": {
         "messageIds": [
-          "msg-1"
+          "recent-messages"
         ],
         "quotes": [
-          "proceed with the fix.",
-          "Error : useManualAuth must be used within ManualAuthProvider",
-          "Error appeares on 1st page",
-          "Home"
+          "Not getting next page after sign up its buffering",
+          "I want user to get next page",
+          "build it"
         ]
       },
       "acceptanceCriteria": [
-        "Loading the app at `/` no longer shows the error: \"useManualAuth must be used within ManualAuthProvider\".",
-        "`LandingPage` renders successfully at `/` with header/footer visible.",
-        "Visiting `/login`, `/admin`, and `/employer/candidates` does not trigger the provider error.",
-        "No changes are made to `frontend/src/main.tsx` (provider is added in an editable file such as `frontend/src/App.tsx`)."
+        "After a successful signup on the Signup page, the app navigates to /profile-setup and renders the Profile Setup form (not an indefinite loader).",
+        "If the Profile Setup page cannot determine profile completeness (e.g., because a backend profile fetch is unauthorized/unavailable), the UI must not block with an infinite spinner; it should fall back to the manual-auth stored state for completeness checks and allow profile setup.",
+        "Protected routes (jobseeker/employer) must not get stuck rendering only a loading indicator due to profile completeness checks."
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "text": "Implement the Jobseeker Profile Setup form fields and behavior as specified: collect Name, Mobile Number, Email ID, Current Location, and an Experience status dropdown (Fresher or Experienced). If Experienced is selected, allow the user to add/edit/remove up to 5 experience entries, each with Company Name, Designation, Process, Last Salary, and total duration (months or years).",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages"
+        ],
+        "quotes": [
+          "If Jobseeker then Name, Mobile No, email id, Current location, 2 dropdown Experience or Fresher, if experienced then Company Name, Designation, Process, Last salary, total month or year worked, user can add upto 5 experience."
+        ]
+      },
+      "acceptanceCriteria": [
+        "Profile Setup for role=jobseeker displays inputs for Name, Mobile Number, Email ID, Current Location, and an Experience Status dropdown with exactly two options: Fresher and Experienced.",
+        "When Experience Status = Fresher, the experience-entry UI is hidden and no experience entries are required.",
+        "When Experience Status = Experienced, the experience-entry UI is shown and the user can add up to 5 entries; attempting to add a 6th entry is prevented with clear English validation messaging.",
+        "Each experience entry contains fields: Company Name, Designation, Process, Last Salary, and Duration (with an explicit months/years choice or a clearly labeled single duration input that captures months or years).",
+        "The submit button remains disabled while saving, and validation errors are shown in English when required fields are missing."
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "text": "Persist manual-auth profile completion state so that after completing Profile Setup the user is routed to the correct next page and will not be repeatedly forced back into /profile-setup on subsequent visits.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "recent-messages"
+        ],
+        "quotes": [
+          "I want user to get next page",
+          "Profile Setup"
+        ]
+      },
+      "acceptanceCriteria": [
+        "On successful Profile Setup submit, the app navigates to /jobseeker/dashboard for jobseekers and /employer/candidates for employers.",
+        "Manual-auth stored account/session state is updated to indicate the profile is complete (so ProtectedRoute no longer redirects the user back to /profile-setup).",
+        "Refreshing the browser after completing profile does not send the user back to /profile-setup (unless they explicitly clear storage/log out)."
       ]
     }
   ],
   "constraints": [
-    "Do not edit any frontend immutable paths, including `frontend/src/main.tsx` and the UI component library under `frontend/src/components/ui`.",
-    "Use English for any user-facing text."
+    "Do not use Internet Identity for signup/login (manual auth only), per user request.",
+    "Do not edit files under frontend immutable paths: frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, and frontend/src/components/ui/* (compose existing UI components instead).",
+    "Keep all user-facing text in English."
   ],
   "nonGoals": [
-    "Do not change backend canister code or authentication logic beyond fixing the missing provider wiring.",
-    "Do not redesign the login flow, role gating, or credential storage as part of this fix."
+    "Implement backend-based manual authentication APIs (signup/login/logout/validateSession) in Motoko.",
+    "Add or complete job posting and job application features.",
+    "Change employer profile requirements beyond what is necessary to prevent buffering/redirect loops."
   ],
   "imageRequirements": {
     "required": [],

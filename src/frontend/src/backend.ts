@@ -163,7 +163,7 @@ export interface backendInterface {
     isCallerAdmin(): Promise<boolean>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     setCreditCostPerUnlock(cost: bigint): Promise<void>;
-    setSessionTimeout(timeout: bigint): Promise<void>;
+    setSessionTimeout(arg0: bigint): Promise<void>;
     unlockCandidateProfile(candidatePrincipal: Principal): Promise<UnlockResult>;
 }
 import type { CandidateProfile as _CandidateProfile, Employer as _Employer, EmployerProfile as _EmployerProfile, UserProfile as _UserProfile, UserRole as _UserRole } from "./declarations/backend.did.d.ts";

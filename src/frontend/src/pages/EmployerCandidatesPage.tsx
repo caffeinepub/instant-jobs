@@ -12,6 +12,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import CandidateUnlockCard from '../components/employer/CandidateUnlockCard';
 import { toast } from 'sonner';
 import { Principal } from '@icp-sdk/core/principal';
+import { normalizeActorError } from '../utils/actorErrorMessages';
 
 export default function EmployerCandidatesPage() {
   const { isAuthenticated, role } = useManualAuth();
@@ -20,7 +21,6 @@ export default function EmployerCandidatesPage() {
   const unlockMutation = useUnlockCandidate();
   const [searchKeyword, setSearchKeyword] = useState('');
   const [skillFilter, setSkillFilter] = useState('');
-  const [unlockedCandidates, setUnlockedCandidates] = useState<Set<string>>(new Set());
 
   const isEmployer = role === 'employer';
 
@@ -60,15 +60,9 @@ export default function EmployerCandidatesPage() {
   const handleUnlock = async (candidatePrincipal: Principal) => {
     try {
       const result = await unlockMutation.mutateAsync(candidatePrincipal);
-      setUnlockedCandidates((prev) => new Set(prev).add(candidatePrincipal.toString()));
       toast.success(result.status);
     } catch (error: any) {
-      const message = error.message || 'Failed to unlock profile';
-      if (message.includes('Insufficient credits')) {
-        toast.error('Insufficient credits. Please contact admin to add more credits.');
-      } else {
-        toast.error(message);
-      }
+      toast.error(normalizeActorError(error));
     }
   };
 
@@ -157,9 +151,7 @@ export default function EmployerCandidatesPage() {
       {error && (
         <Alert variant="destructive" className="mb-6">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            Failed to load candidate directory. Please try again later.
-          </AlertDescription>
+          <AlertDescription>{normalizeActorError(error)}</AlertDescription>
         </Alert>
       )}
 
@@ -181,10 +173,10 @@ export default function EmployerCandidatesPage() {
       ) : (
         <div className="space-y-4">
           {filteredCandidates.map((candidate, index) => {
-            // In a real implementation, we'd track unlocked status from backend
-            // For now, we'll use local state
-            const candidatePrincipal = Principal.anonymous(); // Placeholder
-            const isUnlocked = unlockedCandidates.has(candidatePrincipal.toString());
+            // Note: Backend doesn't provide principal IDs in directory
+            // This is a limitation - we can't unlock without the principal
+            const candidatePrincipal = Principal.anonymous();
+            const isUnlocked = false; // Backend should indicate unlock status
             
             return (
               <CandidateUnlockCard

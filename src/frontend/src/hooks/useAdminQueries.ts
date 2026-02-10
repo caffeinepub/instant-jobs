@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useActor } from './useActor';
 import { Principal } from '@icp-sdk/core/principal';
 import type { Employer, UnlockRecord } from '../backend';
+import { assertActorMethod } from '../utils/actorGuards';
 
 export function useGetAllEmployers() {
   const { actor, isFetching } = useActor();
@@ -10,6 +11,7 @@ export function useGetAllEmployers() {
     queryKey: ['allEmployers'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
+      assertActorMethod(actor, 'getAllEmployers', 'useGetAllEmployers');
       return actor.getAllEmployers();
     },
     enabled: !!actor && !isFetching,
@@ -23,6 +25,7 @@ export function useGetAllJobseekers() {
     queryKey: ['allJobseekers'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
+      assertActorMethod(actor, 'getAllJobseekers', 'useGetAllJobseekers');
       return actor.getAllJobseekers();
     },
     enabled: !!actor && !isFetching,
@@ -36,6 +39,7 @@ export function useGetAllUnlockLogs() {
     queryKey: ['allUnlockLogs'],
     queryFn: async () => {
       if (!actor) throw new Error('Actor not available');
+      assertActorMethod(actor, 'getAllUnlockLogs', 'useGetAllUnlockLogs');
       return actor.getAllUnlockLogs();
     },
     enabled: !!actor && !isFetching,
@@ -49,6 +53,7 @@ export function useAddCredits() {
   return useMutation({
     mutationFn: async ({ employerPrincipal, credits }: { employerPrincipal: Principal; credits: bigint }) => {
       if (!actor) throw new Error('Actor not available');
+      assertActorMethod(actor, 'addCredits', 'useAddCredits');
       await actor.addCredits(employerPrincipal, credits);
     },
     onSuccess: () => {
@@ -64,6 +69,7 @@ export function useDeductCredits() {
   return useMutation({
     mutationFn: async ({ employerPrincipal, credits }: { employerPrincipal: Principal; credits: bigint }) => {
       if (!actor) throw new Error('Actor not available');
+      assertActorMethod(actor, 'deductCredits', 'useDeductCredits');
       await actor.deductCredits(employerPrincipal, credits);
     },
     onSuccess: () => {
@@ -79,6 +85,7 @@ export function useSetCreditCost() {
   return useMutation({
     mutationFn: async (cost: bigint) => {
       if (!actor) throw new Error('Actor not available');
+      assertActorMethod(actor, 'setCreditCostPerUnlock', 'useSetCreditCost');
       await actor.setCreditCostPerUnlock(cost);
     },
     onSuccess: () => {

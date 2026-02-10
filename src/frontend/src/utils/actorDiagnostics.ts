@@ -18,19 +18,18 @@ export interface ActorDiagnosticsReport {
  * List of all required backend methods and where they're used in the frontend
  */
 const REQUIRED_METHODS = [
-  { name: 'chooseRole', usedIn: 'useChooseRole (RoleSetupModal)' },
   { name: 'getCallerUserProfile', usedIn: 'useGetCallerUserProfile (RoleSetupModal, Auth checks)' },
   { name: 'saveCallerUserProfile', usedIn: 'useSaveCallerUserProfile (RoleSetupModal)' },
-  { name: 'getJobs', usedIn: 'useGetJobs (JobsBrowsePage)' },
-  { name: 'getJob', usedIn: 'useGetJob (JobDetailPage, EmployerJobApplicationsPage)' },
-  { name: 'getJobsByEmployer', usedIn: 'useGetJobsByEmployer (EmployerDashboardPage)' },
-  { name: 'createJob', usedIn: 'useCreateJob (EmployerJobForm)' },
-  { name: 'deleteJob', usedIn: 'useDeleteJob (EmployerDashboardPage)' },
-  { name: 'applyForJob', usedIn: 'useApplyForJob (CandidateApplyForm)' },
-  { name: 'getApplicationsForCandidate', usedIn: 'useGetCandidateApplications (CandidateDashboardPage)' },
-  { name: 'getApplicationsForJob', usedIn: 'useGetJobApplications (EmployerJobApplicationsPage)' },
-  { name: 'updateApplicationStatus', usedIn: 'useUpdateApplicationStatus (EmployerJobApplicationsPage)' },
   { name: 'getCandidateDirectory', usedIn: 'useGetCandidateDirectory (EmployerCandidatesPage)' },
+  { name: 'getCreditBalance', usedIn: 'useGetEmployerCredits (EmployerCandidatesPage)' },
+  { name: 'getCreditCostPerUnlock', usedIn: 'useGetCreditCost (Admin, Employer)' },
+  { name: 'unlockCandidateProfile', usedIn: 'useUnlockCandidate (EmployerCandidatesPage)' },
+  { name: 'getAllEmployers', usedIn: 'useGetAllEmployers (AdminPanelPage)' },
+  { name: 'getAllJobseekers', usedIn: 'useGetAllJobseekers (AdminPanelPage)' },
+  { name: 'getAllUnlockLogs', usedIn: 'useGetAllUnlockLogs (AdminPanelPage)' },
+  { name: 'addCredits', usedIn: 'useAddCredits (AdminPanelPage)' },
+  { name: 'deductCredits', usedIn: 'useDeductCredits (AdminPanelPage)' },
+  { name: 'setCreditCostPerUnlock', usedIn: 'useSetCreditCost (AdminPanelPage)' },
 ];
 
 /**

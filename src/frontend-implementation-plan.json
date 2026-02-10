@@ -1,22 +1,85 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Wrap TanStack Router tree with ManualAuthProvider to prevent initial load crash",
+  "title": "Manual-auth post-signup navigation fix + Jobseeker Profile Setup (Fresher/Experienced with experiences)",
   "requirements": [
     {
-      "id": "REQ-27",
-      "summary": "Prevent `useManualAuth` runtime error by ensuring `ManualAuthProvider` wraps the entire routed application tree (RootLayout/AppLayout/AppHeader and all pages) without modifying `frontend/src/main.tsx`.",
+      "id": "REQ-1",
+      "summary": "Eliminate the post-signup infinite loader by making route protection/profile-completeness checks non-blocking under manual auth and allowing /profile-setup to render immediately.",
       "acceptanceCriteria": [
-        "Loading the app at `/` no longer shows the error: \"useManualAuth must be used within ManualAuthProvider\".",
-        "`LandingPage` renders successfully at `/` with header/footer visible.",
-        "Visiting `/login`, `/admin`, and `/employer/candidates` does not trigger the provider error.",
-        "No changes are made to `frontend/src/main.tsx` (provider is added in an editable file such as `frontend/src/App.tsx`)."
+        "After a successful signup on the Signup page, the app navigates to /profile-setup and renders the Profile Setup form (not an indefinite loader).",
+        "If the Profile Setup page cannot determine profile completeness (e.g., because a backend profile fetch is unauthorized/unavailable), the UI must not block with an infinite spinner; it should fall back to the manual-auth stored state for completeness checks and allow profile setup.",
+        "Protected routes (jobseeker/employer) must not get stuck rendering only a loading indicator due to profile completeness checks."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/components/auth/ProtectedRoute.tsx",
           "operation": "modify",
-          "description": "Import `ManualAuthProvider` from `frontend/src/hooks/useManualAuth.tsx` and wrap the RouterProvider (and any routed UI like layouts/pages) so that `RootLayout`, `AppLayout`, `AppHeader`, and all route components render within the provider context, while keeping `frontend/src/main.tsx` unchanged."
+          "description": "Remove the redirect/loader loop by (1) allowing the /profile-setup route to render even when the backend profile query is loading/failed, and (2) using manual-auth persisted profile-completion state as the primary/fallback signal for completeness checks when backend profile fetch is unavailable/unauthorized. Ensure no code path returns an indefinite loader for jobseeker/employer routes."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Adjust the profile query hook return shape to expose non-blocking states (e.g., distinguish 'actor not ready', 'fetch failed/unauthorized', and 'success') so ProtectedRoute can safely fall back to manual-auth completion without spinner loops. Keep all user-facing text in English."
+        },
+        {
+          "path": "frontend/src/components/auth/SignupPage.tsx",
+          "operation": "modify",
+          "description": "Ensure the post-signup navigation to /profile-setup cannot be obstructed by loading state (e.g., clear any stale errors/loading flags promptly) and that the button/loading state returns correctly; rely on the fixed ProtectedRoute behavior so the form is interactable immediately. Keep all user-facing text in English."
+        }
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "summary": "Implement the Jobseeker Profile Setup UI for Name/Mobile/Email/Location plus Fresher vs Experienced, with up to 5 add/edit/remove experience entries and English validation.",
+      "acceptanceCriteria": [
+        "Profile Setup for role=jobseeker displays inputs for Name, Mobile Number, Email ID, Current Location, and an Experience Status dropdown with exactly two options: Fresher and Experienced.",
+        "When Experience Status = Fresher, the experience-entry UI is hidden and no experience entries are required.",
+        "When Experience Status = Experienced, the experience-entry UI is shown and the user can add up to 5 entries; attempting to add a 6th entry is prevented with clear English validation messaging.",
+        "Each experience entry contains fields: Company Name, Designation, Process, Last Salary, and Duration (with an explicit months/years choice or a clearly labeled single duration input that captures months or years).",
+        "The submit button remains disabled while saving, and validation errors are shown in English when required fields are missing."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/components/profile/ProfileSetupPage.tsx",
+          "operation": "modify",
+          "description": "Replace the current jobseeker form with the specified fields: Name, Mobile Number, Email ID (prefill from manual-auth session and render as read-only or clearly labeled), Current Location, and an Experience Status dropdown with exactly 'Fresher' and 'Experienced'. When 'Experienced' is selected, render a repeatable experiences section with add/edit/remove controls capped at 5 entries and English validation (including a clear message when trying to add a 6th). Each entry must include Company Name, Designation, Process, Last Salary, and Duration with an explicit months/years choice. Use existing shadcn-ui components (e.g., Card, Button, Input, Label, Textarea, Select, Alert) to compose the UI; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/auth/manualAuthTypes.ts",
+          "operation": "modify",
+          "description": "Extend/augment local TypeScript types used by manual auth and profile setup as needed to represent the jobseeker profile setup payload in the UI (including experience status and up to 5 experience items). Keep all user-facing text in English."
+        }
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "summary": "Persist manual-auth profile completion so users are routed to the correct next page after Profile Setup and are not redirected back to /profile-setup on refresh or subsequent visits.",
+      "acceptanceCriteria": [
+        "On successful Profile Setup submit, the app navigates to /jobseeker/dashboard for jobseekers and /employer/candidates for employers.",
+        "Manual-auth stored account/session state is updated to indicate the profile is complete (so ProtectedRoute no longer redirects the user back to /profile-setup).",
+        "Refreshing the browser after completing profile does not send the user back to /profile-setup (unless they explicitly clear storage/log out)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/hooks/useManualAuth.tsx",
+          "operation": "modify",
+          "description": "Add manual-auth APIs/state to persist and retrieve profile completion per stored account (e.g., a context value like hasCompletedProfile and an action like markProfileComplete()). Ensure it updates localStorage-backed account state so refreshes preserve completion and ProtectedRoute can use it reliably. Keep all user-facing text in English."
+        },
+        {
+          "path": "frontend/src/components/profile/ProfileSetupPage.tsx",
+          "operation": "modify",
+          "description": "On successful submit, mark the manual-auth account as profile-complete and navigate to the correct route based on role (/jobseeker/dashboard or /employer/candidates). If saving a backend profile is unavailable/unauthorized, still treat local completion as success for routing and future access. Disable the submit button while saving and show English errors when validation fails. Use existing shadcn-ui components for alerts/buttons; verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/ProtectedRoute.tsx",
+          "operation": "modify",
+          "description": "Update profile-completeness gating/redirect logic to use the manual-auth persisted completion flag so users who completed setup are not redirected back to /profile-setup on subsequent visits/refresh. Ensure jobseeker/employer protected routes render without getting stuck on a loading indicator."
+        },
+        {
+          "path": "frontend/src/components/auth/LoginPage.tsx",
+          "operation": "modify",
+          "description": "Ensure routing after login uses the persisted manual-auth profile completion state (so completed users go directly to /jobseeker/dashboard or /employer/candidates and are not sent back to /profile-setup). Keep all user-facing text in English."
         }
       ]
     }

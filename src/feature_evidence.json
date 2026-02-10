@@ -2,10 +2,11 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-fix-the-runtime-error-on-initial-load-landing-home-route-where-usemanualauth-is-called-outside-of-manualauthprovider-by-wrapping-the-application-route-tree-with-manualauthprovider-at-a-level-that-covers-rootlayout-applayout-appheader-and-all-routed-pages-without-editing-frontend-src-main-tsx-immutable",
-      "featureTitle": "Fix the runtime error on initial load (Landing/Home route) where `useManualAuth` is called outside of `ManualAuthProvider` by wrapping the application route tree with `<ManualAuthProvider>` at a level that covers `RootLayout`, `AppLayout`, `AppHeader`, and all routed pages, without editing `frontend/src/main.tsx` (immutable).",
+      "featureId": "feature-fix-the-infinite-loading-buffering-after-manual-signup-so-that-users-reliably-navigate-to-the-profile-setup-page-and-can-interact-with-the-form-immediately-no-spinner-loop",
+      "featureTitle": "Fix the infinite loading/buffering after manual signup so that users reliably navigate to the Profile Setup page and can interact with the form immediately (no spinner loop).",
       "files": [
-        "frontend/src/App.tsx"
+        "frontend/src/components/auth/ProtectedRoute.tsx",
+        "frontend/src/components/auth/SignupPage.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -16,7 +17,49 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-27"
+        "REQ-1"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-the-jobseeker-profile-setup-form-fields-and-behavior-as-specified-collect-name-mobile-number-email-id-current-location-and-an-experience-status-dropdown-fresher-or-experienced-if-experienced-is-selected-allow-the-user-to-add-edit-remove-up-to-5-experience-entries-each-with-company-name-designation-process-last-salary-and-total-duration-months-or-years",
+      "featureTitle": "Implement the Jobseeker Profile Setup form fields and behavior as specified: collect Name, Mobile Number, Email ID, Current Location, and an Experience status dropdown (Fresher or Experienced). If Experienced is selected, allow the user to add/edit/remove up to 5 experience entries, each with Company Name, Designation, Process, Last Salary, and total duration (months or years).",
+      "files": [
+        "frontend/src/auth/manualAuthTypes.ts",
+        "frontend/src/components/profile/ProfileSetupPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-2"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-persist-manual-auth-profile-completion-state-so-that-after-completing-profile-setup-the-user-is-routed-to-the-correct-next-page-and-will-not-be-repeatedly-forced-back-into-profile-setup-on-subsequent-visits",
+      "featureTitle": "Persist manual-auth profile completion state so that after completing Profile Setup the user is routed to the correct next page and will not be repeatedly forced back into /profile-setup on subsequent visits.",
+      "files": [
+        "frontend/src/components/auth/LoginPage.tsx",
+        "frontend/src/components/auth/ProtectedRoute.tsx",
+        "frontend/src/components/profile/ProfileSetupPage.tsx",
+        "frontend/src/hooks/useManualAuth.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-3"
       ],
       "confidence": "high"
     }
